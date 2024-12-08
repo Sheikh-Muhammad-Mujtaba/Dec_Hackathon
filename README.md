@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Pixel Perfect E-Commerce UI Design - Hackathon Challenge  
 
-## Getting Started
+## Project Overview  
+This project was developed as part of a 24-hour hackathon challenge. The objective was to convert a Figma design into a **pixel-perfect, fully responsive e-commerce web application**. The result is a sleek, and modern interface that aligns precisely with the given design.  
 
-First, run the development server:
+The project comprises four key pages:
+1. **Homepage:** Highlights new arrivals, top sellers, and customer testimonials.  
+2. **Product Detail Page:** Provides detailed product information, reviews, and recommendations.  
+3. **Category Page:** Enables browsing products with filtering options.  
+4. **Cart Page:** Features a user-friendly cart summary, promo code application, and checkout flow.  
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Purpose  
+The primary aim of this project was to:  
+- **Convert Figma Designs into Clean Code:** Demonstrate precision in transforming design concepts into responsive code.  
+- **Deliver Pixel Perfect UI:** Ensure strict alignment with Figma design specifications.   
+- **Complete in Tight Deadlines:** Showcase the ability to deliver high-quality code within 24 hours.  
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Technologies Used  
+To achieve a seamless and precise design, the following technologies and libraries were used:  
+- **Framework:** Next.js (React-based framework for routing).  
+- **Styling:** Tailwind CSS (for utility-first responsive design).  
+- **UI Components:** shadcn/ui for reusable and accessible components.  
+- **Icons:** Lucide Icons for lightweight, customizable icons.  
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Key Features  
+- **Responsive Design:** Fully optimized for desktop, tablet, and mobile devices.  
+- **Reusable Components:** Modular and reusable components for scalability.  
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## How to Run the Project Locally  
 
-## Learn More
+### Prerequisites  
+Ensure you have the following installed:  
+- **Node.js** (v16+ recommended).  
+- **npm** or **yarn** (package manager).  
+- **Git** (to clone the repository).  
 
-To learn more about Next.js, take a look at the following resources:
+### Steps to Set Up  
+1. **Clone the Repository:**  
+   ```bash  
+   git clone https://github.com/Sheikh-Muhammad-Mujtaba/Dec_Hackathon.git
+   cd Dec_Hackathon  
+   ```  
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Install Dependencies:**  
+   ```bash  
+   npm install  
+   # or  
+   yarn install  
+   ```  
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **Run the Development Server:**  
+   ```bash  
+   npm run dev  
+   # or  
+   yarn dev  
+   ```  
+   Open your browser and navigate to `http://localhost:3000` to view the project.  
 
-## Deploy on Vercel
+4. **Build for Production:**  
+   To generate an optimized production build:  
+   ```bash  
+   npm run build  
+   # or  
+   yarn build  
+   ```  
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+5. **Start the Production Server:**  
+   Run the following command after building the app:  
+   ```bash  
+   npm run start  
+   # or  
+   yarn start  
+   ```  
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Challenges and Achievements  
+- **Time Constraint:** Successfully completed the project within the 24-hour hackathon deadline.  
+- **Pixel Perfect Accuracy:** Delivered UI designs that precisely match the Figma file.  
+- **Responsive Design:** Ensured optimal usability across various devices and screen sizes.  
+- **Technology Stack Mastery:** Leveraged modern tools like shadcn, Tailwind CSS, and Next.js to build a robust and clean UI.  
+
+## Project Purpose  
+This project highlights the importance of achieving **design fidelity** in web development while emphasizing modularity, responsiveness, and user-centric features for e-commerce platforms.  
+

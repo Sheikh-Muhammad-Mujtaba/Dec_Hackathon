@@ -38,7 +38,7 @@ function page() {
                             <span className="text-sm md:text-base text-black/60 md:mr-3 tracking-tighter">
                                 Showing 1-10 of 100 Products
                             </span>
-                            <div className=" hidden md:flex flex-col lg:flex-row items-start tracking-tighter">
+                            <div className=" hidden md:flex flex-col lg:flex-row items-center tracking-tighter">
                                 Sort by:{" "}
                                 <Select defaultValue="most-popular">
                                     <SelectTrigger className="font-medium text-sm px-1.5 sm:text-base w-fit text-black bg-transparent shadow-none border-none">

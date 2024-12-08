@@ -49,7 +49,7 @@ export default function Header() {
                         } absolute md:static left-0 top-[80px] w-full md:w-[321px] flex-col md:flex-row md:flex justify-center items-center gap-[24px] bg-white md:bg-transparent font-normal text-[16px] leading-[24px] text-center text-nowrap text-[#000000]`}
                 >
                     <Link
-                        href="/#"
+                        href="/category"
                         id="l1"
                         onClick={() => handleClick("#l1")}
                         className={` flex items-center ${activeLink === "#l1"
@@ -72,7 +72,7 @@ export default function Header() {
                         On Sale
                     </Link>
                     <Link
-                        href="/#"
+                        href="/product_detail"
                         id="l3"
                         onClick={() => handleClick("#l3")}
                         className={` ${activeLink === "#l3"
@@ -83,7 +83,7 @@ export default function Header() {
                         New Arrivals
                     </Link>
                     <Link
-                        href="/#"
+                        href="/#brand"
                         id="l4"
                         onClick={() => handleClick("#l4")}
                         className={` ${activeLink === "#l4"
