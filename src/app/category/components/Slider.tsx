@@ -1,35 +1,34 @@
-"use client"
+import React from 'react';
+import * as SliderPrimitive from '@radix-ui/react-slider';
 
-import Slider from "rc-slider";
-import "rc-slider/assets/index.css";
-import { useState } from "react";
+interface PriceRangeSliderProps {
+  range: number[];
+  onChange: (range: number[]) => void;
+}
 
-export default function PriceRangeSlider() {
-  const [range, setRange] = useState([50, 200]);
-
-  const handleChange = (newRange: any) => {
-    setRange(newRange);
-  };
-
+const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({ range, onChange }) => {
   return (
-    <div className="w-full max-w-[247px] mx-auto">
-      <Slider
-        range
-        min={0}
+    <div className='w-full'>
+      <SliderPrimitive.Root
+        className="relative flex items-center select-none touch-none w-full h-5"
+        value={range}
+        onValueChange={onChange}
         max={500}
-        defaultValue={range}
-        onChange={handleChange}
-        trackStyle={[{ backgroundColor: "black", height: 4 }]}
-        handleStyle={[
-          { backgroundColor: "black", borderColor: "black" },
-          { backgroundColor: "black", borderColor: "black" },
-        ]}
-        railStyle={{ backgroundColor: "#e4e4e4", height: 4 }}
-      />
-      <div className="ml-[10px] w-[100px] flex justify-between mt-2 text-sm font-medium">
+        step={1}
+      >
+        <SliderPrimitive.Track className="bg-black/10 relative grow rounded-full h-[3px]">
+          <SliderPrimitive.Range className="absolute bg-black rounded-full h-full" />
+        </SliderPrimitive.Track>
+        <SliderPrimitive.Thumb className="block w-5 h-5 bg-black border-2 border-black rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black" />
+        <SliderPrimitive.Thumb className="block w-5 h-5 bg-black border-2 border-black rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black" />
+      </SliderPrimitive.Root>
+      <div className="flex justify-between mt-2">
         <span>${range[0]}</span>
         <span>${range[1]}</span>
       </div>
     </div>
   );
-}
+};
+
+export default PriceRangeSlider;
+

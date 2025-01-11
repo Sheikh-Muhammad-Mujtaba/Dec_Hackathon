@@ -24,7 +24,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   } = product;
 
   return (
-    <Card className="group relative min-w-[198px] md:max-w-[280px]  rounded-none border-none shadow-none">
+    <Card className="group relative w-[198px] md:w-[295px] overflow-hidden rounded-none border-none shadow-none">
       <CardContent className="p-0">
         <div className="relative aspect-square flex justify-center items-center">
 

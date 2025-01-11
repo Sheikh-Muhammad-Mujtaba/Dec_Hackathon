@@ -1,28 +1,29 @@
-import React from 'react'
+import React from "react";
 import Image from "next/image";
 
+const brandLogos = [
+  { src: "/Hero/versace.png", alt: "Versace Logo", width: 116.74, height: 23.25, mdWidth: 166.48, mdHeight: 33.16 },
+  { src: "/Hero/zara.png", alt: "Zara Logo", width: 63.81, height: 26.65, mdWidth: 91, mdHeight: 38 },
+  { src: "/Hero/gucci.png", alt: "Gucci Logo", width: 109.39, height: 25.24, mdWidth: 156, mdHeight: 36 },
+  { src: "/Hero/parada.png", alt: "Parada Logo", width: 127, height: 21, mdWidth: 194, mdHeight: 32 },
+  { src: "/Hero/calvin.png", alt: "Calvin Klein Logo", width: 134.84, height: 21.75, mdWidth: 206.79, mdHeight: 33.35 },
+];
+
 function Banner() {
-    return (
-        <div className='flex flex-wrap justify-center items-center gap-[32px] md:gap-[106px] max-w-[1440px] min-h-[122px] bg-[#000000] py-[40px]'>
-            {/* versace */}
-            <Image src={"/Hero/versace.png"} alt='Versace Logo' width={100} height={100} 
-            className='h-[23.25px] md:h-[33.16px] w-[116.74px] md:w-[166.48px]'/>
-            {/* Zara */}
-            <Image src={"/Hero/zara.png"} alt='Zara Logo' width={100} height={100} 
-            className='h-[26.65px] md:h-[38px] w-[63.81px] md:w-[91px]'/>
-            {/* Gucci */}
-            <Image src={"/Hero/gucci.png"} alt='Gucci Logo' width={100} height={100} 
-            className='h-[25.24px] md:h-[36px] w-[109.39px] md:w-[156px]'/>
-            {/* parada */}
-            <Image src={"/Hero/parada.png"} alt='Parada Logo' width={100} height={100} 
-            className='h-[21px] md:h-[32px] w-[127px] md:w-[194px]'/>
-            {/* Calvin */}
-            <Image src={"/Hero/calvin.png"} alt='Calvin Klein Logo' width={100} height={100} 
-            className='h-[21.75px] md:h-[33.35px] w-[134.84px] md:w-[206.79px]'/>
-
-
-        </div>
-    )
+  return (
+    <div className="flex flex-wrap justify-center items-center gap-[32px] md:gap-[106px] max-w-[1440px] min-h-[122px] bg-[#000000] py-[40px]">
+      {brandLogos.map((logo, index) => (
+        <Image
+          key={index}
+          src={logo.src}
+          alt={logo.alt}
+          width={100}
+          height={100}
+          className={`h-[${logo.height}px] md:h-[${logo.mdHeight}px] w-[${logo.width}px] md:w-[${logo.mdWidth}px]`}
+        />
+      ))}
+    </div>
+  );
 }
 
-export default Banner
+export default Banner;
