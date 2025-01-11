@@ -110,7 +110,7 @@ function Page() {
                                         </svg>
                                     </Button>
                                 </SheetTrigger>
-                                <SheetContent side="bottom">
+                                <SheetContent side="bottom" className="h-screen w-full overflow-y-auto flex justify-center">
                                     <Filter onFilterChange={handleFilterChange} isMobile={true} />
                                 </SheetContent>
                             </Sheet>

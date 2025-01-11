@@ -35,11 +35,11 @@ function Filter({ onFilterChange, isMobile = false }: FilterProps) {
     };
 
     const handleCategoryChange = (category: string) => {
-        updateFilters({ category, dressStyle: '' }); // Reset dressStyle
+        updateFilters({ category, dressStyle: '' });
     };
 
     const handleDressStyleChange = (dressStyle: string) => {
-        updateFilters({ dressStyle, category: '' }); // Reset category
+        updateFilters({ dressStyle, category: '' }); 
     };
 
     const handlePriceChange = (priceRange: number[]) => {
@@ -61,7 +61,7 @@ function Filter({ onFilterChange, isMobile = false }: FilterProps) {
     };
 
     const applyFilters = () => {
-        onFilterChange(filters); // Apply all filters
+        onFilterChange(filters);
     };
 
     return (
