@@ -115,9 +115,8 @@ export default function Header() {
 
                 {/* Navigation Links */}
                 <div
-                    className={`${
-                        isMenuOpen ? "flex" : "hidden"
-                    } overflow-x-clip sm:overflow-visible absolute md:static left-0 top-[130px] w-full md:w-[321px] flex-col md:flex-row md:flex justify-center px-2 sm:px-0 pb-2 sm:pb-0 sm:items-center gap-[24px] bg-white md:bg-transparent font-normal text-[16px] leading-[24px] text-start sm:text-center text-nowrap text-[#000000]`}
+                    className={`${isMenuOpen ? "flex" : "hidden"
+                        } overflow-x-clip sm:overflow-visible absolute md:static left-0 top-[130px] w-full md:w-[321px] flex-col md:flex-row md:flex justify-center px-2 sm:px-0 pb-2 sm:pb-0 sm:items-center gap-[24px] bg-white md:bg-transparent font-normal text-[16px] leading-[24px] text-start sm:text-center text-nowrap text-[#000000]`}
                 >
                     <NavigationMenu>
                         <NavigationMenuItem className="list-none">
@@ -128,7 +127,7 @@ export default function Header() {
                                 <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                                     {components.map((component) => (
                                         <ListItem
-                                        className='text-start sm:text-center text-wrap'
+                                            className='text-start sm:text-center text-wrap'
                                             key={component.title}
                                             title={component.title}
                                             href={component.href}
@@ -145,9 +144,8 @@ export default function Header() {
                         href="/#"
                         id="l2"
                         onClick={() => handleClick("#l2")}
-                        className={`${
-                            activeLink === "#l2" ? "border-b-2 border-[solid] border-[#7D8184]" : ""
-                        } px-4 sm:px-0`}
+                        className={`${activeLink === "#l2" ? "border-b-2 border-[solid] border-[#7D8184]" : ""
+                            } px-4 sm:px-0`}
                     >
                         On Sale
                     </Link>
@@ -156,9 +154,8 @@ export default function Header() {
                         href="/product_detail"
                         id="l3"
                         onClick={() => handleClick("#l3")}
-                        className={`${
-                            activeLink === "#l3" ? "border-b-2 border-[solid] border-[#7D8184]" : ""
-                        } px-4 sm:px-0`}
+                        className={`${activeLink === "#l3" ? "border-b-2 border-[solid] border-[#7D8184]" : ""
+                            } px-4 sm:px-0`}
                     >
                         New Arrivals
                     </Link>
@@ -167,9 +164,8 @@ export default function Header() {
                         href="/#brand"
                         id="l4"
                         onClick={() => handleClick("#l4")}
-                        className={`${
-                            activeLink === "#l4" ? "border-b-2 border-[solid] border-[#7D8184]" : ""
-                        } px-4 sm:px-0`}
+                        className={`${activeLink === "#l4" ? "border-b-2 border-[solid] border-[#7D8184]" : ""
+                            } px-4 sm:px-0`}
                     >
                         Brands
                     </Link>
@@ -212,9 +208,12 @@ export default function Header() {
                         <Search size={24} />
                     </button>
 
-                    <Link href="/cart">
-                        <ShoppingCartIcon />
-                    </Link>
+                    <button title="checkout" className="snipcart-checkout relative">
+                        <span className="snipcart-items-count absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-xs text-white bg-red-500 rounded-full shadow-md">
+                        </span>
+                        <ShoppingCartIcon className="w-6 h-6 text-black" />
+                    </button>
+
 
                     <Link href="#">
                         <CircleUserRound />
