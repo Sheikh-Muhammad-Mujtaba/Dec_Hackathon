@@ -41,9 +41,7 @@ function page() {
                 <div className='flex flex-col-reverse lg:flex-row gap-[12px] md:gap-[14px]'>
                     <div className='flex flex-row lg:flex-col items-center justify-center gap-[12px] md:gap-[14px]'>
                         <Image src={"/product-detail/img1.png"} alt='One Life Graphic T-shirt' width={170} height={138} className='w-[111px] lg:w-[152px] h-[106px] lg:h-[167px]' />
-                        <Image src={"/product-detail/img2.png"} alt='One Life Graphic T-shirt' width={170} height={138} className='w-[111px] lg:w-[152px] h-[106px] lg:h-[167px]' />
-                        <Image src={"/product-detail/img3.png"} alt='One Life Graphic T-shirt' width={170} height={138} className='w-[111px] lg:w-[152px] h-[106px] lg:h-[167px]' />
-                    </div>
+                          </div>
                     <Image src={"/product-detail/img4.png"} alt='One Life Graphic T-shirt' width={500} height={600} className='w-full md:w-[444px] h-[290px] md:h-[530px]' />
 
                 </div>

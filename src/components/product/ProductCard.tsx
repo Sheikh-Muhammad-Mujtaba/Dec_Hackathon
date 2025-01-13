@@ -1,9 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Image from 'next/image';
+import Link from "next/link";
 
 interface ProductCardProps {
   product: {
+    id:number;
     name: string;
     price: number;
     originalPrice?: number;
@@ -15,6 +17,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const {
+    id,
     name,
     price,
     originalPrice,
@@ -25,6 +28,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Card className="group relative w-[198px] md:w-[295px] overflow-hidden rounded-none border-none shadow-none">
+      <Link href={`/product_detail/${id}`}>
       <CardContent className="p-0">
         <div className="relative aspect-square flex justify-center items-center">
 
@@ -68,6 +72,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           
         </div>
       </CardContent>
+      </Link>
     </Card>
   );
 }
