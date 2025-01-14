@@ -12,8 +12,8 @@ import {
 import { ChevronRight, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import Card from "../components/Suggestion/Cards";
-import TabNavigation from "../components/TabNavigation";
+import Card from "./Suggestion/Cards";
+import TabNavigation from "./TabNavigation";
 
 export default function ProductClient({ product }: { product: any }) {
     const [selectedColor, setSelectedColor] = useState<string | null>(null);
