@@ -4,38 +4,55 @@ import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { BadgeCheck, Ellipsis, SlidersHorizontal } from "lucide-react";
 
-
 export const revalidate = 2;
+
 async function fetchProduct(id: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/products?id=${id}`, { cache: "no-store"});
-  if (!res.ok) {
-    throw new Error("Failed to fetch product");
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/products?id=${id}`, { cache: "no-store" });
+    if (!res.ok) throw new Error("Failed to fetch product");
+    return res.json();
+  } catch (error) {
+    console.error(error);
+    return null;
   }
-  return res.json();
 }
 
-async function postReview(id: string, review: { rating: number; name: string; review: string }) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/products`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id, ...review }),
-  });
-  if (!res.ok) {
-    throw new Error("Failed to post review");
+async function postReview(id: string, reviews: { rating: number; name: string; review: string }) {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/products`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, ...reviews }),
+    });
+    if (!res.ok) throw new Error("Failed to post review");
+    return res.json();
+  } catch (error) {
+    console.error(error);
+    throw error;
   }
-  return res.json();
 }
 
 interface Review {
   id: number;
-  rating: number;
   name: string;
   review: string;
+  rating: number;
   date: string;
 }
 
 interface Product {
-  Reviews: Review[];
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  priceWithoutDiscount: number;
+  discountPercentage: number;
+  stockLevel: number;
+  sizes: string[];
+  colors: string[];
+  tags: string[];
+  images: string[];
+  reviews: Review[];
 }
 
 interface ReviewCardProps {
@@ -96,7 +113,7 @@ const Reviews: React.FC<ReviewsProps> = ({ id }) => {
     getProduct();
   }, [id]);
 
-  const sortedReviews = product?.Reviews.sort((a, b) => {
+  const sortedReviews = product?.reviews?.sort((a, b) => {
     if (sortOrder === "latest") {
       return new Date(b.date).getTime() - new Date(a.date).getTime();
     }
@@ -108,7 +125,7 @@ const Reviews: React.FC<ReviewsProps> = ({ id }) => {
       const reviewResponse = await postReview(id, newReview);
       setProduct((prev) => ({
         ...prev!,
-        Reviews: [...prev!.Reviews, reviewResponse],
+        reviews: [...(prev?.reviews || []), reviewResponse],
       }));
       setNewReview({ name: "", rating: 5, review: "" });
       setShowReviewForm(false);
@@ -123,7 +140,7 @@ const Reviews: React.FC<ReviewsProps> = ({ id }) => {
         <h1 className="text-[20px] md:text-[24px] font-bold">
           All Reviews{" "}
           <span className="text-[14px] md:text-[16px] font-normal leading-[22px] text-muted-foreground">
-            ({product?.Reviews.length || 0})
+            ({product?.reviews?.length ?? 0})
           </span>
         </h1>
         <div className="flex flex-row items-center gap-[8px] md:gap-[10px]">
@@ -181,8 +198,21 @@ const Reviews: React.FC<ReviewsProps> = ({ id }) => {
       )}
 
       {product && (
-        <div className="w-[98vw] flex justify-center items-center mt-4">
+        <div className="w-[98vw] flex flex-col justify-center items-center mt-4">
           <ReviewCard reviews={sortedReviews!} visibleReviews={visibleReviews} />
+          <div className="flex justify-center mt-4">
+            {visibleReviews < (product.reviews?.length ?? 0) && (
+              <Button
+                onClick={() => setVisibleReviews((prev) => prev + 4)}
+                className="mr-2"
+              >
+                Show More
+              </Button>
+            )}
+            {visibleReviews > 4 && (
+              <Button onClick={() => setVisibleReviews(4)}>Show Less</Button>
+            )}
+          </div>
         </div>
       )}
     </div>

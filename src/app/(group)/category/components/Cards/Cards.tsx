@@ -4,19 +4,21 @@ import { useEffect, useState, useMemo } from "react";
 import { Card as UiCard, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import Link from "next/link";
 
 interface Item {
   id: number;
-  imageUrl: string;
+  images: string[];
   name: string;
   price: number;
   originalPrice?: number;
   discount?: number;
   rating: number;
-  tag: string[];
-  color: string;
-  size: string;
-  dressStyle: string;
+  tags: string[];
+  colors: string[];
+  sizes: string[];
+  slug: string;
+  dressStyle: string[];
 }
 
 interface ProductListProps {
@@ -34,7 +36,7 @@ const ProductList = ({ filters, currentPage, productsPerPage }: ProductListProps
     let filtered = allItems;
 
     if (filters.category) {
-      filtered = filtered.filter((item) => item.tag.includes(filters.category));
+      filtered = filtered.filter((item) => item.tags.includes(filters.category));
     }
 
     if (filters.priceRange) {
@@ -44,15 +46,15 @@ const ProductList = ({ filters, currentPage, productsPerPage }: ProductListProps
     }
 
     if (filters.colors && filters.colors.length > 0) {
-      filtered = filtered.filter((item) => filters.colors.includes(item.color));
+      filtered = filtered.filter((item) => filters.colors.includes(item.colors));
     }
 
     if (filters.size && filters.size.length > 0) {
-      filtered = filtered.filter((item) => filters.size.includes(item.size));
+      filtered = filtered.filter((item) => filters.size.includes(item.sizes));
     }
 
     if (filters.dressStyle) {
-      filtered = filtered.filter((item) => item.tag.includes(filters.dressStyle));
+      filtered = filtered.filter((item) => item.tags.includes(filters.dressStyle));
     }
 
     return filtered;
@@ -103,10 +105,11 @@ const ProductList = ({ filters, currentPage, productsPerPage }: ProductListProps
           key={product.id}
           className="group relative min-w-[198px] md:max-w-[280px] rounded-none border-none shadow-none"
         >
+          <Link href={`/product_detail/${product.slug}`}>
           <CardContent className="p-0">
             <div className="relative aspect-square flex justify-center items-center">
               <Image
-                src={product.imageUrl}
+                src={product.images[0]}
                 alt={product.name}
                 width={295}
                 height={180}
@@ -159,6 +162,7 @@ const ProductList = ({ filters, currentPage, productsPerPage }: ProductListProps
               </div>
             </div>
           </CardContent>
+          </Link>
         </UiCard>
       ))}
     </div>

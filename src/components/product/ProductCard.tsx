@@ -5,35 +5,37 @@ import Link from "next/link";
 
 interface ProductCardProps {
   product: {
-    id:number;
+    id: string;
+    slug: string;
     name: string;
     price: number;
     originalPrice?: number;
     discount?: number;
     rating: number;
-    imageUrl: string;
+    images: string[];
   };
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
   const {
     id,
+    slug,
     name,
     price,
     originalPrice,
     discount,
     rating,
-    imageUrl,
+    images,
   } = product;
 
   return (
     <Card className="group relative w-[198px] md:w-[295px] overflow-hidden rounded-none border-none shadow-none">
-      <Link href={`/product_detail/${id}`}>
+      <Link href={`/product_detail/${slug}`}>
       <CardContent className="p-0">
         <div className="relative aspect-square flex justify-center items-center">
 
           <Image
-            src={imageUrl}
+            src={images[0]}
             alt={name}
             width={295}
             height={180}
@@ -58,12 +60,12 @@ export default function ProductCard({ product }: ProductCardProps) {
           {/* price */}
           <div className="flex items-center gap-2">
             <span className="text-[20px] md:text-[24px] font-bold">${price.toFixed(2)}</span>
-            {originalPrice && (
+            {originalPrice != price && (
               <span className="text-[20px] md:text-[24px] font-bold text-muted-foreground line-through">
-                ${originalPrice.toFixed(2)}
+                ${originalPrice?.toFixed(2)}
               </span>
             )}
-            {discount && (
+            {discount != 0 && (
               <Badge variant="destructive" className="bg-[rgba(255,_51,_51,_0.1)] font-medium text-[12px] leading-[16px] text-[#FF3333]">
                 -{discount}%
               </Badge>

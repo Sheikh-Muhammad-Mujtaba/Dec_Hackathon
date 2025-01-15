@@ -5,12 +5,13 @@ import ProductCard from "../ProductCard";
 
 // Define the Item type for better type safety
 interface Item {
-  id: number;
-  imageUrl: string;
+  id: string;
+  slug: string;
+  images: string[];
   name: string;
   price: number;
   rating: number;
-  tag: string[]; 
+  tags: string[]; 
 }
 
 // Card Component
@@ -18,7 +19,7 @@ const Card: React.FC<{ items: Item[] }> = ({ items }) => {
   return (
     <div className="flex gap-[16px] md:gap-[20px] flex-wrap justify-center">
       {items.map((item) => (
-        <ProductCard key={item.id} product={item} />
+        <ProductCard key={item.slug} product={item} />
       ))}
     </div>
   );
@@ -43,7 +44,7 @@ const NewArrival: React.FC = () => {
 
         // Filter items with the "New Arrival" tag
         const newArrivalItems = data.filter((item) =>
-          item.tag.includes("New Arrival")
+          item.tags.includes("New Arrival")
         );
 
         setAllItems(newArrivalItems);

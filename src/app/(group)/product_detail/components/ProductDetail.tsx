@@ -19,6 +19,8 @@ export default function ProductClient({ product }: { product: any }) {
     const [selectedColor, setSelectedColor] = useState<string | null>(null);
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
     const [quantity, setQuantity] = useState<number>(1);
+    const [selectedImage, setSelectedImage] = useState(0);
+
 
     const handleQuantityChange = (type: "increment" | "decrement") => {
         setQuantity((prev) => (type === "increment" ? prev + 1 : Math.max(1, prev - 1)));
@@ -43,7 +45,7 @@ export default function ProductClient({ product }: { product: any }) {
                         <ChevronRight />
                     </BreadcrumbSeparator>
                     <BreadcrumbItem>
-                        <BreadcrumbPage>{product.tag[0]}</BreadcrumbPage>
+                        <BreadcrumbPage>{product.tags[0]}</BreadcrumbPage>
                     </BreadcrumbItem>
                 </BreadcrumbList>
             </Breadcrumb>
@@ -51,12 +53,31 @@ export default function ProductClient({ product }: { product: any }) {
             {/* Product Detail */}
             <div className="flex flex-col lg:flex-row items-center justify-center px-[16px] gap-[12px] md:gap-[14px] mt-[20px] md:mt-[36px]">
                 <div className="flex flex-col-reverse lg:flex-row gap-[12px] md:gap-[14px]">
+                    <div className="flex lg:flex-col gap-[12px] overflow-x-auto lg:overflow-y-auto">
+                        {product.images.map((image: string, index: number) => (
+                            <button
+                                title="img button"
+                                key={index}
+                                onClick={() => setSelectedImage(index)}
+                                className={`min-w-[85px] md:min-w-[100px] border-2 ${selectedImage === index ? "border-black" : "border-transparent"
+                                    }`}
+                            >
+                                <Image
+                                    src={image || "/placeholder.svg"}
+                                    alt={`${product.name} view ${index + 1}`}
+                                    width={100}
+                                    height={120}
+                                    className="w-full h-[85px] md:h-[120px] object-cover"
+                                />
+                            </button>
+                        ))}
+                    </div>
                     <Image
-                        src={product.imageUrl}
+                        src={product.images[selectedImage] || "/placeholder.svg"}
                         alt={product.name}
                         width={500}
                         height={600}
-                        className="w-full md:w-[444px] h-[290px] md:h-[530px]"
+                        className="w-full md:w-[444px] h-[290px] md:h-[530px] object-cover"
                     />
                 </div>
                 <div className="flex flex-col gap-[40px] mt-5 md:mt-0 md:ml-[40px]">
@@ -76,7 +97,7 @@ export default function ProductClient({ product }: { product: any }) {
                     </div>
                     <p className="text-[32px] font-bold">
                         ${product.price}{" "}
-                        {product.originalPrice && <span className="line-through text-muted-foreground">${product.originalPrice}</span>}
+                        {product.originalPrice != product.price && <span className="line-through text-muted-foreground">${product.originalPrice}</span>}
                     </p>
 
                     {/* Colors */}
@@ -133,7 +154,7 @@ export default function ProductClient({ product }: { product: any }) {
                             data-item-price={product.price}
                             data-item-url={`${process.env.NEXT_PUBLIC_BASE_URL}/products/${product.id}`}
                             data-item-description={product.description}
-                            data-item-image={product.imageUrl}
+                            data-item-image={product.images[0]}
                             data-item-custom1-name="Color"
                             data-item-custom1-options={product.colors.join('|')}
                             data-item-custom2-name="Size"
@@ -155,7 +176,7 @@ export default function ProductClient({ product }: { product: any }) {
                         You might also like
                     </h1>
                     <div className='w-[95vw] mt-[32px] md:mt-[55px] flex justify-center items-center overflow-x-hidden'>
-                        <Card relatedTags={product.tag} />
+                        <Card relatedTags={product.tags} />
                     </div>
                 </div>
             </div>

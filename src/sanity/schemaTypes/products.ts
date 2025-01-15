@@ -7,7 +7,7 @@ const client = createClient({
   dataset: 'production',
   useCdn: false,
   apiVersion: '2021-08-31',
-  token: process.env.SANITY_API_TOKEN, 
+  token: process.env.SANITY_API_TOKEN,
 });
 
 export default {
@@ -20,6 +20,36 @@ export default {
       title: 'Product Name',
       type: 'string',
       validation: (Rule: Rule) => Rule.required(),
+    },
+    {
+      name: 'slug',
+      title: 'Slug',
+      type: 'slug',
+      options: {
+        source: (doc: { name: string; _id: string }) => `${doc.name}-${doc._id}`, // Combine name and id to generate the slug
+        maxLength: 96,
+        slugify: (input: string) => input
+          .toLowerCase()
+          .replace(/\s+/g, '-')         // Replace spaces with dashes
+          .replace(/[^\w\-]+/g, '')    // Remove special characters
+          .slice(0, 96),               // Trim to max length
+      },
+      validation: (Rule: Rule) =>
+        Rule.required().custom(async (slug: any, context: any) => {
+          if (!slug || !slug.current) return 'Slug is required';
+
+          const isUnique = await client.fetch(
+            `
+              count(*[_type == "product" && slug.current == $slug && !(_id in [$currentId])])
+            `,
+            {
+              slug: slug.current,
+              currentId: context.document._id, // Exclude the current document's ID
+            }
+          );
+
+          return isUnique === 0 || 'Slug must be unique';
+        }),
     },
     {
       name: 'description',
