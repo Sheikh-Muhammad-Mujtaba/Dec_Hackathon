@@ -33,4 +33,4 @@ async function deleteDocuments(documentType) {
 }
 
 // Call the function with the document type you want to delete
-deleteDocuments('product'); // Replace 'product' with your document type
+deleteDocuments('productll'); // Replace 'product' with your document type
