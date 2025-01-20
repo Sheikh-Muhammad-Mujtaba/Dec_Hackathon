@@ -144,14 +144,14 @@ const ProductList = ({ filters, currentPage, productsPerPage }: ProductListProps
               {/* Price */}
               <div className="flex items-center gap-2">
                 <span className="text-[20px] md:text-[24px] font-bold">
-                  ${product.price.toFixed(2)}
+                  ${product.price}
                 </span>
-                {product.originalPrice && (
+                {product.originalPrice != product.price && (
                   <span className="text-[20px] md:text-[24px] font-bold text-muted-foreground line-through">
-                    ${product.originalPrice.toFixed(2)}
+                    ${product.originalPrice}
                   </span>
                 )}
-                {product.discount && (
+                {product.discount != 0 && (
                   <Badge
                     variant="destructive"
                     className="bg-[rgba(255,_51,_51,_0.1)] font-medium text-[12px] leading-[16px] text-[#FF3333]"

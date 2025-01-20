@@ -5,6 +5,9 @@ import Link from 'next/link';
 import React, { useEffect, useRef, useState } from 'react';
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuTrigger } from './ui/navigation-menu';
 import { cn } from '@/lib/utils';
+import { useCart } from '@/contexts/CardContext';
+import { usePathname } from 'next/navigation';
+import { useUser, UserButton } from '@clerk/nextjs';
 
 const components = [
     {
@@ -45,6 +48,12 @@ export default function Header() {
     const [isVisible, setIsVisible] = useState(true);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
+    const { cartItems } = useCart(); // Access cart items from context
+
+    // Calculate the total number of items in the cart
+    const totalItems = cartItems.reduce((count, item) => count + item.quantity, 0);
+    const { isSignedIn } = useUser();
+    const pathname = usePathname();
 
     useEffect(() => {
         const handleResize = () => {
@@ -89,7 +98,7 @@ export default function Header() {
                             <h1 className="font-normal text-[#FAFAFA]">
                                 Sign up and get 20% off to your first order.
                             </h1>
-                            <Link href={""} className="font-semibold leading-[24px] underline">
+                            <Link href={"/dashboard"} className="font-semibold leading-[24px] underline">
                                 Sign Up Now
                             </Link>
                         </div>
@@ -208,16 +217,26 @@ export default function Header() {
                         <Search size={24} />
                     </button>
 
-                    <button title="checkout" className="snipcart-checkout relative">
-                        <span className="snipcart-items-count absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-xs text-white bg-red-500 rounded-full shadow-md">
-                        </span>
+                    <Link href="/cart" title="checkout" className="snipcart-checkout relative">
+                        {/* Badge showing the number of items in the cart */}
+                        {totalItems > 0 && (
+                            <span className="snipcart-items-count absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-xs text-white bg-red-500 rounded-full shadow-md">
+                                {totalItems}
+                            </span>
+                        )}
                         <ShoppingCartIcon className="w-6 h-6 text-black" />
-                    </button>
-
-
-                    <Link href="#">
-                        <CircleUserRound />
                     </Link>
+
+                    {/* Conditional rendering based on the current path */}
+                    {pathname === '/dashboard' && isSignedIn ? (
+                        // Show UserButton only on the dashboard page
+                        <UserButton afterSignOutUrl="/" />
+                    ) : (
+                        // Show default icon for other pages
+                        <Link href="/dashboard" title="Go to Dashboard">
+                            <CircleUserRound />
+                        </Link>
+                    )}
                 </div>
             </nav>
         </header>

@@ -266,7 +266,7 @@ export default {
 
 ```typescript
 export default {
-  name: 'order',
+  name: 'customer',
   type: 'document',
   fields: [
     { name: 'Customer_id', type: 'string', title: 'Customer_id' },
