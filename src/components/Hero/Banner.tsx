@@ -11,7 +11,7 @@ const brandLogos = [
 
 function Banner() {
   return (
-    <div className="flex flex-wrap justify-center items-center gap-[32px] md:gap-[106px] max-w-[1440px] min-h-[122px] bg-[#000000] py-[40px]">
+    <div id="brand" className="flex flex-wrap justify-center items-center gap-[32px] md:gap-[106px] max-w-[1440px] min-h-[122px] bg-[#000000] py-[40px]">
       {brandLogos.map((logo, index) => (
         <Image
           key={index}

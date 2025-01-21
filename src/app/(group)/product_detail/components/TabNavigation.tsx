@@ -2,24 +2,9 @@
 
 import { useState } from "react";
 import Reviews from "./reviews/ReviewCard"; // Import the Reviews component
+import ProductDescription from "./description";
+import FAQs from "./Faqs";
 
-function FAQ() {
-  return (
-    <div className="p-4">
-      <h2 className="text-lg font-bold">FAQs</h2>
-      <p>Frequently Asked Questions will be displayed here.</p>
-    </div>
-  );
-}
-
-function ProductDetails() {
-  return (
-    <div className="p-4">
-      <h2 className="text-lg font-bold">Product Details</h2>
-      <p>Detailed product information will be displayed here.</p>
-    </div>
-  );
-}
 
 interface TabNavigationProps {
   productId: string;
@@ -33,11 +18,11 @@ export default function TabNavigation({ productId }: TabNavigationProps) {
   const renderContent = () => {
     switch (activeTab) {
       case "Product Details":
-        return <ProductDetails />;
+        return <ProductDescription productId={productId} />;
       case "Rating & Reviews":
         return <Reviews id={productId} />; 
       case "FAQs":
-        return <FAQ />;
+        return <FAQs />;
       default:
         return null;
     }

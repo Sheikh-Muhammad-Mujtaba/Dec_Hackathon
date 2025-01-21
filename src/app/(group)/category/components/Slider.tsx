@@ -13,7 +13,7 @@ const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({ range, onChange }) 
         className="relative flex items-center select-none touch-none w-full h-5"
         value={range}
         onValueChange={onChange}
-        max={500}
+        max={1000}
         step={1}
       >
         <SliderPrimitive.Track className="bg-black/10 relative grow rounded-full h-[3px]">

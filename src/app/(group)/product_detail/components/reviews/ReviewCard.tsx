@@ -66,7 +66,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ reviews, visibleReviews }) => {
       {reviews.slice(0, visibleReviews).map((review) => (
         <div
           key={review.id}
-          className="relative w-full md:max-w-[610px] min-h-[224px] bg-transparent py-[28px] px-[32px] rounded-lg hover:shadow-2xl flex flex-wrap items-start justify-start border-[1px] border-[rgba(0,0,0,0.1)]"
+          className="relative w-full md:max-w-[610px] min-h-[224px] bg-transparent py-[28px] px-[32px] rounded-lg hover:shadow-2xl flex flex-col items-start justify-start border-[1px] border-[rgba(0,0,0,0.1)]"
         >
           <Ellipsis className="absolute right-[32px] top-[28px]" />
           <div className="flex flex-col items-start gap-[15px] justify-start mb-3">
@@ -82,8 +82,10 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ reviews, visibleReviews }) => {
               <BadgeCheck color="#006607" strokeWidth={1.75} absoluteStrokeWidth />
             </div>
           </div>
-          <p className="text-gray-600 text-[14px] md:text-[16px]">{review.review}</p>
-          <p className="text-gray-600 mt-6 text-[14px] md:text-[16px]">{review.date}</p>
+          <div>
+            <p className="text-gray-600 text-[14px] md:text-[16px]">{review.review}</p>
+            <p className="text-gray-600 mt-6 text-[14px] md:text-[16px]">{review.date}</p>
+          </div>
         </div>
       ))}
     </div>
@@ -167,17 +169,17 @@ const Reviews: React.FC<ReviewsProps> = ({ id }) => {
 
       {showReviewForm && (
         <div className="w-full px-[16px] mt-4">
-          <textarea
-            placeholder="Write your review"
-            value={newReview.review}
-            onChange={(e) => setNewReview({ ...newReview, review: e.target.value })}
-            className="w-full border p-2 rounded mb-2"
-          />
           <input
             type="text"
             placeholder="Your name"
             value={newReview.name}
             onChange={(e) => setNewReview({ ...newReview, name: e.target.value })}
+            className="w-full border p-2 rounded mb-2"
+          />
+          <textarea
+            placeholder="Write your review"
+            value={newReview.review}
+            onChange={(e) => setNewReview({ ...newReview, review: e.target.value })}
             className="w-full border p-2 rounded mb-2"
           />
           <input

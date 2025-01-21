@@ -1,44 +1,93 @@
 "use client";
 
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
-import { ArrowRight, ChevronRight } from 'lucide-react';
-import React, { useState } from 'react';
-import Cart from './components/ProductCard';
-import { Button } from '@/components/ui/button';
-import { useCart } from '@/contexts/CardContext';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { ArrowRight, ChevronRight } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import Cart from "./components/ProductCard";
+import { Button } from "@/components/ui/button";
+import { useCart } from "@/contexts/CardContext";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
+import CheckoutForm from "./components/checkoutForm";
+import { useUser as useClerkUser } from "@clerk/nextjs";
+import { useUser } from "@/contexts/UserContext";
+import { useCallback } from "react";
 
 function Page() {
-  const { cartItems, clearCart } = useCart();
+  const { cartItems } = useCart();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [deliveryFee, setDeliveryFee] = useState<number | null >(null); 
+  const [showCheckoutForm, setShowCheckoutForm] = useState(false);
+  const { customerId, setCustomerId } = useUser();
+  const { user } = useClerkUser();
+
+  useEffect(() => {
+    if (user) {
+      setCustomerId(user.id); 
+    } else {
+      setCustomerId(null); 
+    }
+  }, [user]);
 
   const DISCOUNT_RATE = 0.2;
-  const DELIVERY_FEE = 15;
 
   const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
   const discount = DISCOUNT_RATE * subtotal;
-  const total = subtotal - discount + DELIVERY_FEE;
+  const total = subtotal - discount + (deliveryFee || 0);
 
   const formatCurrency = (value: number) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 
-  const handleCheckout = () => {
+  const handleShipmentRate = useCallback((rate: number | null) => {
+    if (rate === null) {
+      setDeliveryFee(null);
+    } else {
+      setDeliveryFee(rate);
+    }
+  }, []);
+
+  const handleCheckout = async () => {
     setLoading(true);
-    toast({
-      title: "Checkout initiated",
-      description: "Your order is being processed.",
-    });
-    clearCart();
-    setTimeout(() => setLoading(false), 2000); // Simulate async process
+
+    // Check if user details exist in Sanity
+    const response = await fetch(`/api/customers?id=${customerId}`, { method: "GET" });
+    const { customer } = await response.json();
+
+    if (!customer || !customer.Contact || !customer.address) {
+      setShowCheckoutForm(true);
+      toast({
+        title: "Incomplete Details",
+        description: "Please fill in your details to proceed to checkout.",
+        variant: "destructive",
+      });
+      setLoading(false);
+
+      // Scroll to the Checkout Form section
+      document.getElementById("checkout")?.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+
+    // Scroll to the Checkout Form section
+    setShowCheckoutForm(true);
+    document.getElementById("checkout")?.scrollIntoView({ behavior: "smooth" });
+    setLoading(false);
   };
 
   if (cartItems.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
         <h1 className="text-[24px] md:text-[32px] font-bold">Your cart is empty!</h1>
-        <Link href='/' className="mt-4">Continue Shopping</Link>
+        <Link href="/" className="mt-4">
+          Continue Shopping
+        </Link>
       </div>
     );
   }
@@ -86,7 +135,7 @@ function Page() {
             </div>
             <div className="flex justify-between">
               <p>Delivery Fee</p>
-              <p>{formatCurrency(DELIVERY_FEE)}</p>
+              <p>{deliveryFee === null ? "Not Set" : formatCurrency(deliveryFee)}</p>
             </div>
             <hr />
             <div className="flex justify-between">
@@ -101,6 +150,12 @@ function Page() {
           </Button>
         </div>
       </div>
+
+      {showCheckoutForm && (
+        <div id="checkout" className="mt-8 w-full px-[16px] md:px-[100px]">
+          <CheckoutForm customerId={customerId} onShipmentRateUpdate={handleShipmentRate}/>
+        </div>
+      )}
     </div>
   );
 }

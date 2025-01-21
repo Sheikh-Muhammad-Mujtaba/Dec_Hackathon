@@ -11,7 +11,7 @@ interface Item {
   name: string;
   price: number;
   rating: number;
-  tags: string[]; 
+  tags: string[];
 }
 
 // Card Component
@@ -80,7 +80,8 @@ const NewArrival: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col justify-center items-center pt-[50px] md:pt-[72px] px-[16px]">
+    <div id="new_arrival"
+      className="flex flex-col justify-center items-center pt-[50px] md:pt-[72px] px-[16px]">
       <h1 className="text-[32px] md:text-[48px] font-bold">NEW ARRIVALS</h1>
       <div className="min-w-[310px] w-full mt-[32px] md:mt-[55px] flex justify-start md:justify-center items-center overflow-hidden">
         <Card items={visibleItems} />

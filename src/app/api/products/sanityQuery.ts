@@ -30,3 +30,17 @@ export const fetchProducts = async () => {
   return await client.fetch(query);
 };
 
+
+export async function addReviewToProduct(productId: string, review: { rating: number; name: string; review: string; date: string }) {
+  const product = await client.getDocument(productId);
+
+  if (!product) {
+    return null;
+  }
+
+  const updatedReviews = [...(product.reviews || []), review];
+
+  await client.patch(productId).set({ reviews: updatedReviews }).commit();
+
+  return await client.getDocument(productId);
+}

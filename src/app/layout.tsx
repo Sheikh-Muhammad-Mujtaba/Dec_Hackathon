@@ -6,6 +6,7 @@ import { CartProvider } from '@/contexts/CardContext'
 import {
   ClerkProvider,
 } from '@clerk/nextjs'
+import { UserProvider } from "@/contexts/UserContext";
 
 
 const geistSans = localFont({
@@ -30,17 +31,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-        <html lang="en">
-          <body
-            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-          >
+    <ClerkProvider afterSignOutUrl="/">
+      <html lang="en">
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+          <UserProvider>
             <CartProvider>
               {children}
               <Toaster />
             </CartProvider>
-          </body>
-        </html>
+          </UserProvider>
+        </body>
+      </html>
     </ClerkProvider>
   );
 }

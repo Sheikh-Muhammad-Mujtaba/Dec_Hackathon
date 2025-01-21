@@ -1,4 +1,5 @@
-import { fetchProducts } from "./sanityQuery"; // Import the fetch function from sanityQuery.ts
+import { fetchProducts, addReviewToProduct } from "./sanityQuery"; // Import the fetch function from sanityQuery.ts
+import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(request: Request) {
   try {
@@ -74,6 +75,52 @@ export async function GET(request: Request) {
         "X-Content-Type-Options": "nosniff",
       },
     });
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error handling request:", error.message, error.stack);
+    } else {
+      console.error("Error handling request:", error);
+    }
+    return new Response(JSON.stringify({ message: "Internal Server Error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+}
+
+
+export async function POST(request: Request) {
+  try {
+    const { id, rating, name, review } = await request.json();
+
+    if (!id || !rating || !name || !review) {
+      return new Response(JSON.stringify({ message: "Missing required fields" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const newReview = {
+      id: uuidv4(),
+      rating,
+      name,
+      review,
+      date: new Date().toISOString().split('T')[0],
+        };
+
+    const updatedProduct = await addReviewToProduct(id, newReview);
+
+    if (updatedProduct) {
+      return new Response(JSON.stringify(updatedProduct), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    } else {
+      return new Response(JSON.stringify({ message: "Product not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
   } catch (error) {
     if (error instanceof Error) {
       console.error("Error handling request:", error.message, error.stack);
