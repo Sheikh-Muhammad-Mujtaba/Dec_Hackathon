@@ -1,14 +1,16 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect } from 'react'
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb'
-import { ChevronRight } from 'lucide-react'
-import Filter from './components/Filter'
+import React, { useState, useEffect, useMemo } from "react";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { ChevronRight } from "lucide-react";
+import Filter from "./components/Filter";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import ProductList from './components/Cards/Cards';
+import ProductList from "./components/Cards/Cards";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from "@/components/ui/pagination";
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Card as UiCard, CardContent } from "@/components/ui/card";
+
 
 interface Filters {
     category: string;
@@ -18,45 +20,161 @@ interface Filters {
     dressStyle: string;
 }
 
+interface Product {
+    id: number;
+    name: string;
+    tags: string[];
+    price: number;
+    colors: string[];
+    sizes: string[];
+    rating: number;
+  }
+ 
+  
+
 function Page() {
+    // State management
+    const [allProducts, setAllProducts] = useState<Product[]>([]); // Stores all products
+    const [filteredProducts, setFilteredProducts] = useState<Product[]>([]); // Stores filtered and sorted products
     const [filters, setFilters] = useState<Filters>({
-        category: '',
+        category: "",
         priceRange: [0, 500],
         colors: [],
         size: [],
-        dressStyle: ''
+        dressStyle: "",
     });
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalProducts, setTotalProducts] = useState(0);
-    const productsPerPage = 10;
+    const [currentPage, setCurrentPage] = useState(1); // Current page number
+    const [sortOption, setSortOption] = useState("most-popular"); // Sorting option
+    const [loading, setLoading] = useState(true); // Loading state
+    const [error, setError] = useState(null); // Error state
+    const productsPerPage = 10; // Products per page
 
-    const handleFilterChange = (newFilters: Partial<Filters>) => {
-        setFilters((prevFilters) => ({ ...prevFilters, ...newFilters }));
-        setCurrentPage(1); 
-    };
-
+    // Fetch all products on mount
     useEffect(() => {
-        const fetchTotalProducts = async () => {
+        const fetchProducts = async () => {
+            setLoading(true);
             try {
-                const response = await fetch('/api/products');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch products');
-                }
-                const data = await response.json();
-                setTotalProducts(data.length || 0);
-            } catch (error) {
-                console.error('Error fetching total products:', error);
+              const response = await fetch("/api/products");
+              if (!response.ok) {
+                throw new Error("Failed to fetch products");
+              }
+              const data = await response.json();
+          
+              // Map API data to ensure all products have required fields
+              const normalizedData = data.map((product: any) => ({
+                id: product.id || 0,
+                name: product.name || "Unnamed Product",
+                tags: product.tags || [],
+                price: product.price || 0,
+                colors: product.colors || [],
+                sizes: product.sizes || [],
+                rating: product.rating || 0,
+              }));
+          
+              setAllProducts(normalizedData);
+              setFilteredProducts(normalizedData);
+            } catch (err: any) {
+              setError(err.message);
+            } finally {
+              setLoading(false);
             }
-        };
-
-        fetchTotalProducts();
+          };
+          
+        fetchProducts();
     }, []);
 
+    // Handle filter changes
+    const handleFilterChange = (newFilters: Partial<Filters>) => {
+        setFilters((prevFilters) => ({ ...prevFilters, ...newFilters }));
+        setCurrentPage(1); // Reset to the first page when filters change
+    };
+
+    // Handle sorting changes
+    const handleSortChange = (sort: string) => {
+        setSortOption(sort);
+        setCurrentPage(1); // Reset to the first page when sorting changes
+    };
+
+    // Apply filters, sorting, and pagination
+    useEffect(() => {
+        if (!allProducts.length) return;
+
+        let updatedProducts = [...allProducts];
+
+        // Apply filters
+        if (filters.category) {
+            updatedProducts = updatedProducts.filter((product) => product.tags.includes(filters.category));
+        }
+
+        if (filters.priceRange) {
+            updatedProducts = updatedProducts.filter(
+                (product) => product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1]
+            );
+        }
+
+        if (filters.colors.length) {
+            updatedProducts = updatedProducts.filter((product) =>
+                product.colors.some((color: string) => filters.colors.includes(color))
+            );
+        }
+
+        if (filters.size.length) {
+            updatedProducts = updatedProducts.filter((product) =>
+                product.sizes.some((size: string) => filters.size.includes(size))
+            );
+        }
+
+        if (filters.dressStyle) {
+            updatedProducts = updatedProducts.filter((product) => product.tags.includes(filters.dressStyle));
+        }
+          
+
+        setFilteredProducts(updatedProducts);
+    }, [filters, allProducts]);
+
+    // Pagination
+    const totalProducts = filteredProducts.length;
     const totalPages = Math.ceil(totalProducts / productsPerPage);
+    const paginatedProducts = useMemo(() => {
+        const startIndex = (currentPage - 1) * productsPerPage;
+        return filteredProducts.slice(startIndex, startIndex + productsPerPage);
+    }, [filteredProducts, currentPage]);
+
+    // Handle pagination click
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    // Render loading state
+    if (loading) {
+        return (
+            <div className="flex flex-wrap justify-center items-center gap-[16px] md:gap-[20px]">
+                {[...Array(8)].map((_, index) => (
+                    <UiCard
+                        key={index}
+                        className="group relative min-w-[198px] md:max-w-[280px] rounded-none border-none shadow-none"
+                    >
+                        <CardContent className="p-0">
+                            <div className="w-[198px] md:w-[295px] h-[200px] md:h-[298px] bg-gray-200 animate-pulse"></div>
+                            <div className="p-0 pt-4">
+                                <div className="h-[20px] bg-gray-200 animate-pulse mb-[8px]"></div>
+                                <div className="h-[14px] bg-gray-200 animate-pulse w-[50%] mb-[4px]"></div>
+                            </div>
+                        </CardContent>
+                    </UiCard>
+                ))}
+            </div>
+        );
+    }
+
+    // Render error state
+    if (error) {
+        return <p className="text-red-500">{error}</p>;
+    }
 
     return (
-        <div className='w-full mt-6 flex flex-col justify-center items-center'>
-            <Breadcrumb className='mx-[16px] md:mx-[100px] w-[81.25vw]'>
+        <div className="w-full mt-6 flex flex-col justify-center items-center">
+            <Breadcrumb className="mx-[16px] md:mx-[100px] w-[81.25vw]">
                 <BreadcrumbList>
                     <BreadcrumbItem>
                         <BreadcrumbLink href="/">Home</BreadcrumbLink>
@@ -65,33 +183,32 @@ function Page() {
                         <ChevronRight />
                     </BreadcrumbSeparator>
                     <BreadcrumbItem>
-                        <BreadcrumbPage>
-                            {filters.category || filters.dressStyle ? `${filters.category || filters.dressStyle}` : 'All Products'}
-                        </BreadcrumbPage>
+                        <BreadcrumbPage>{filters.category || "All Products"}</BreadcrumbPage>
                     </BreadcrumbItem>
                 </BreadcrumbList>
             </Breadcrumb>
-            <div className='flex gap-[20px] mt-6 justify-center'>
-                {/* filter section */}
-                <Filter
-                    onFilterChange={handleFilterChange}
-                />
 
-                {/* heading */}
-                <div className='flex flex-col justify-start items-center w-full md:max-w-[950px] px-[16px] md:max-px-[100px]'>
-                    <div className="flex flex-row gap-[8px] lg:justify-between w-full">
+            <div className="flex gap-[20px] mt-6 justify-center">
+                {/* Filter Section */}
+                <Filter onFilterChange={handleFilterChange} />
+
+                {/* Product List Section */}
+                <div className="flex flex-col justify-start items-center w-full md:max-w-[950px] px-[16px] md:max-px-[100px]">
+                    <div className="flex flex-col xl:flex-row gap-[8px] lg:justify-between w-full">
                         <div className="flex items-center justify-between">
                             <h1 className="font-bold text-2xl md:text-[28px] tracking-tighter text-nowrap">
-                                {filters.category || filters.dressStyle ? `${filters.category || filters.dressStyle}` : 'All Products'}
+                                {filters.category || "All Products"}
                             </h1>
                         </div>
-                        <div className="w-full flex justify-between md:justify-end items-center flex-row">
+
+                        <div className=" w-full flex flex-col sm:flex-row justify-between md:justify-end items-center text-nowrap sm:text-wrap">
                             <span className="text-sm md:text-base text-black/60 md:mr-3 tracking-tighter">
-                                Showing {(currentPage - 1) * productsPerPage + 1}-{Math.min(currentPage * productsPerPage, totalProducts)} of {totalProducts} Products
+                                Showing {(currentPage - 1) * productsPerPage + 1}-{Math.min(currentPage * productsPerPage, totalProducts)} of{" "}
+                                {totalProducts} Products
                             </span>
-                            <div className=" hidden md:flex flex-col lg:flex-row items-center tracking-tighter">
+                            <div className="flex flex-row items-center tracking-tighter">
                                 Sort by:{" "}
-                                <Select defaultValue="most-popular">
+                                <Select defaultValue="most-popular" onValueChange={handleSortChange}>
                                     <SelectTrigger className="font-medium text-sm px-1.5 sm:text-base w-fit text-black bg-transparent shadow-none border-none focus:ring-transparent">
                                         <SelectValue />
                                     </SelectTrigger>
@@ -101,8 +218,8 @@ function Page() {
                                         <SelectItem value="high-price">High Price</SelectItem>
                                     </SelectContent>
                                 </Select>
-                            </div>
-                            <Sheet>
+
+                                <Sheet>
                                 <SheetTrigger asChild>
                                     <Button className='flex md:hidden bg-[#F0F0F0] w-[32px] h-[32px] rounded-full'>
                                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -114,55 +231,47 @@ function Page() {
                                     <Filter onFilterChange={handleFilterChange} isMobile={true} />
                                 </SheetContent>
                             </Sheet>
+                            </div>
+                           
                         </div>
-
                     </div>
-                    <ProductList filters={filters} currentPage={currentPage} productsPerPage={productsPerPage} />
-                    <hr className='w-full mt-[32px] mb-[20px] border-gray-200' />
-                    <Pagination className="justify-between">
-                        <PaginationPrevious href="#" className="w-[85px] md:w-auto border border-black/10" />
-                        <PaginationContent>
-                            <PaginationItem>
-                                <PaginationLink href="#" className="text-black/50 font-medium text-sm" isActive>
-                                    1
-                                </PaginationLink>
-                            </PaginationItem>
-                            <PaginationItem>
-                                <PaginationLink href="#" className="text-black/50 font-medium text-sm">
-                                    2
-                                </PaginationLink>
-                            </PaginationItem>
-                            <PaginationItem className="hidden lg:block">
-                                <PaginationLink href="#" className="text-black/50 font-medium text-sm">
-                                    3
-                                </PaginationLink>
-                            </PaginationItem>
-                            <PaginationItem>
-                                <PaginationEllipsis className="text-black/50 font-medium text-sm" />
-                            </PaginationItem>
-                            <PaginationItem className="hidden lg:block">
-                                <PaginationLink href="#" className="text-black/50 font-medium text-sm">
-                                    8
-                                </PaginationLink>
-                            </PaginationItem>
-                            <PaginationItem className="hidden sm:block">
-                                <PaginationLink href="#" className="text-black/50 font-medium text-sm">
-                                    9
-                                </PaginationLink>
-                            </PaginationItem>
-                            <PaginationItem>
-                                <PaginationLink href="#" className="text-black/50 font-medium text-sm">
-                                    10
-                                </PaginationLink>
-                            </PaginationItem>
-                        </PaginationContent>
 
-                        <PaginationNext href="#" className="w-[60px] md:w-auto border border-black/10" />
+                    <ProductList filters={filters} currentPage={currentPage} productsPerPage={productsPerPage}  sortOption={sortOption}  />
+
+                    <hr className="w-full mt-[32px] mb-[20px] border-gray-200" />
+
+                    <Pagination className="justify-between">
+                        <PaginationPrevious
+                            href="#"
+                            onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+                            isActive={currentPage !== 1}
+                            className="w-[85px] md:w-auto border border-black/10"
+                        />
+                        <PaginationContent>
+                            {Array.from({ length: totalPages }).map((_, index) => (
+                                <PaginationItem key={index}>
+                                    <PaginationLink
+                                        href="#"
+                                        isActive={currentPage === index + 1}
+                                        onClick={() => handlePageChange(index + 1)}
+                                        className="text-black/50 font-medium text-sm"
+                                    >
+                                        {index + 1}
+                                    </PaginationLink>
+                                </PaginationItem>
+                            ))}
+                        </PaginationContent>
+                        <PaginationNext
+                            href="#"
+                            onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
+                            isActive={currentPage !== totalPages}
+                            className="w-[60px] md:w-auto border border-black/10"
+                        />
                     </Pagination>
                 </div>
             </div>
         </div>
-    )
+    );
 }
 
-export default Page
+export default Page;

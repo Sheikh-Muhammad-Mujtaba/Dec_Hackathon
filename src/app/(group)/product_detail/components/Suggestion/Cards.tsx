@@ -4,15 +4,16 @@ import ProductCard from "@/components/product/ProductCard";
 import React, { useEffect, useState } from "react";
 
 interface Product {
-  id: number;
+  id: string;
+  slug: string;
   name: string;
-  tag: string[];
+  tags: string[];
   [key: string]: any;
   price: number;
   originalPrice?: number;
   discount?: number;
   rating: number;
-  imageUrl: string;
+  images: string[];
 }
 
 interface CardProps {
@@ -43,7 +44,7 @@ const Card: React.FC<CardProps> = ({ relatedTags }) => {
   // Filter products based on related tags
   const filteredProducts = relatedTags.length
     ? products.filter((product) =>
-        product.tag.some((tag) => relatedTags.includes(tag))
+        product.tags.some((tag) => relatedTags.includes(tag))
       )
     : [];
 
@@ -64,7 +65,7 @@ const Card: React.FC<CardProps> = ({ relatedTags }) => {
   return (
     <div className="flex flex-wrap gap-[16px] md:gap-[20px] justify-center items-center">
       {suggestedProducts.map((product) => (
-        <ProductCard key={product.id} product={product} />
+        <ProductCard key={product.slug} product={product} />
       ))}
     </div>
   );

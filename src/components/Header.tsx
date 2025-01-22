@@ -5,37 +5,26 @@ import Link from 'next/link';
 import React, { useEffect, useRef, useState } from 'react';
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuTrigger } from './ui/navigation-menu';
 import { cn } from '@/lib/utils';
+import { useCart } from '@/contexts/CardContext';
+import { usePathname } from 'next/navigation';
+import { useUser as useClerkUser, UserButton } from '@clerk/nextjs';
+import { useRouter } from "next/navigation";
 
 const components = [
     {
-        title: "Alert Dialog",
-        href: "/",
-        description: "A modal dialog that interrupts the user with important content and expects a response.",
+        title: "T-Shirts",
+        href: "/category?search=t-shirts",
+        description: "T-shirts are versatile and stylish, making them a staple in every wardrobe.",
     },
     {
-        title: "Hover Card",
-        href: "/",
-        description: "For sighted users to preview content available behind a link.",
+        title: "Casual",
+        href: "/category?search=casual",
+        description: "Casual wear is comfortable and relaxed, perfect for everyday wear.",
     },
     {
-        title: "Progress",
-        href: "/",
-        description: "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
-    },
-    {
-        title: "Scroll-area",
-        href: "/",
-        description: "Visually or semantically separates content.",
-    },
-    {
-        title: "Tabs",
-        href: "/",
-        description: "A set of layered sections of content—known as tab panels—that are displayed one at a time.",
-    },
-    {
-        title: "Tooltip",
-        href: "/",
-        description: "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
+        title: "Gym",
+        href: "/category?search=gym",
+        description: "Gym wear is designed to be comfortable and breathable, making it perfect for workouts.",
     },
 ];
 
@@ -45,6 +34,27 @@ export default function Header() {
     const [isVisible, setIsVisible] = useState(true);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
+    const { cartItems } = useCart(); // Access cart items from context
+    const [searchQuery, setSearchQuery] = useState(""); // State to store user input
+    const router = useRouter(); // Use router for navigation
+
+    const handleSearch = () => {
+        if (searchQuery.trim() !== "") {
+            // Redirect to category page with the search query
+            router.push(`/category?search=${encodeURIComponent(searchQuery)}`);
+        }
+    };
+
+    const handleKeyPress = (e: { key: string; }) => {
+        if (e.key === "Enter") {
+            handleSearch();
+        }
+    };
+
+    // Calculate the total number of items in the cart
+    const totalItems = cartItems.reduce((count, item) => count + item.quantity, 0);
+    const { isSignedIn } = useClerkUser();
+    const pathname = usePathname();
 
     useEffect(() => {
         const handleResize = () => {
@@ -82,14 +92,14 @@ export default function Header() {
     return (
         <header className="flex flex-col items-center justify-center font-sans not-italic border-b-2">
             {/* Top Header */}
-            {isVisible && (
+            {!isSignedIn && (
                 <div className="w-full bg-[#000000] pr-[12px] sm:pr-[9.444vw] pt-[9px] pb-[9px] md:pb-[10px] text-white flex items-center justify-center md:justify-end">
                     <div className="flex flex-row items-center justify-between p-0 pl-[12px] gap-[15px] md:w-[59.653vw]">
                         <div className="flex flex-row items-center p-0 gap-[8px] w-full text-[10px] sm:text-[14px]">
                             <h1 className="font-normal text-[#FAFAFA]">
                                 Sign up and get 20% off to your first order.
                             </h1>
-                            <Link href={""} className="font-semibold leading-[24px] underline">
+                            <Link href={"/dashboard"} className="font-semibold leading-[24px] underline">
                                 Sign Up Now
                             </Link>
                         </div>
@@ -141,7 +151,7 @@ export default function Header() {
                     </NavigationMenu>
 
                     <Link
-                        href="/#"
+                        href="/#top_selling"
                         id="l2"
                         onClick={() => handleClick("#l2")}
                         className={`${activeLink === "#l2" ? "border-b-2 border-[solid] border-[#7D8184]" : ""
@@ -151,7 +161,7 @@ export default function Header() {
                     </Link>
 
                     <Link
-                        href="/product_detail"
+                        href="/#new_arrival"
                         id="l3"
                         onClick={() => handleClick("#l3")}
                         className={`${activeLink === "#l3" ? "border-b-2 border-[solid] border-[#7D8184]" : ""
@@ -173,10 +183,13 @@ export default function Header() {
 
                 {/* Search Bar */}
                 <div className="hidden lg:flex justify-center items-center relative max-w-[577px] h-[48px]">
-                    <Search size={24} className="relative left-[40px]" />
+                    <Search size={24} className="relative left-[40px] cursor-pointer" onClick={handleSearch} />
                     <input
                         type="text"
                         placeholder="Search for products..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)} // Update state on input change
+                        onKeyDown={handleKeyPress}
                         className="flex flex-row justify-between items-center pl-[52px] gap-[10px] w-[40.069vw] h-full bg-[#F5F5F5] rounded-full"
                     />
                 </div>
@@ -188,10 +201,13 @@ export default function Header() {
                         className="absolute top-[130px] left-0 w-full bg-white shadow-md p-4 z-30"
                     >
                         <div className="flex items-center w-full h-[40px] px-2 bg-gray-100 rounded-full">
-                            <Search size={24} className="relative left-[10px]" />
+                            <Search size={24} className="relative left-[10px] cursor-pointer" onClick={handleSearch}/>
                             <input
                                 type="text"
                                 placeholder="Search for products..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)} // Update state on input change
+                                onKeyDown={handleKeyPress}
                                 className="flex flex-row justify-between items-center pl-[52px] gap-[10px] w-full h-full bg-[#F5F5F5] rounded-full focus:outline-none"
                             />
                         </div>
@@ -208,16 +224,26 @@ export default function Header() {
                         <Search size={24} />
                     </button>
 
-                    <button title="checkout" className="snipcart-checkout relative">
-                        <span className="snipcart-items-count absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-xs text-white bg-red-500 rounded-full shadow-md">
-                        </span>
+                    <Link href="/cart" title="checkout" className="snipcart-checkout relative">
+                        {/* Badge showing the number of items in the cart */}
+                        {totalItems > 0 && (
+                            <span className="snipcart-items-count absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-xs text-white bg-red-500 rounded-full shadow-md">
+                                {totalItems}
+                            </span>
+                        )}
                         <ShoppingCartIcon className="w-6 h-6 text-black" />
-                    </button>
-
-
-                    <Link href="#">
-                        <CircleUserRound />
                     </Link>
+
+                    {/* Conditional rendering based on the current path */}
+                    {pathname === '/dashboard' && isSignedIn ? (
+                        // Show UserButton only on the dashboard page
+                        <UserButton afterSignOutUrl="/" />
+                    ) : (
+                        // Show default icon for other pages
+                        <Link href="/dashboard" title="Go to Dashboard">
+                            <CircleUserRound />
+                        </Link>
+                    )}
                 </div>
             </nav>
         </header>

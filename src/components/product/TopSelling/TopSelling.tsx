@@ -5,12 +5,13 @@ import ProductCard from "../ProductCard";
 
 // Define the Item type for better type safety
 interface Item {
-  id: number;
-  imageUrl: string;
+  id: string;
+  slug: string;
+  images: string[];
   name: string;
   price: number;
   rating: number;
-  tag: string[]; 
+  tags: string[]; 
 }
 
 // Card Component
@@ -18,7 +19,7 @@ const Card: React.FC<{ items: Item[] }> = ({ items }) => {
   return (
     <div className="flex gap-[16px] md:gap-[20px] flex-wrap justify-center">
       {items.map((item) => (
-        <ProductCard key={item.id} product={item} />
+        <ProductCard key={item.slug} product={item} />
       ))}
     </div>
   );
@@ -43,7 +44,7 @@ const TopSelling: React.FC = () => {
 
         // Filter items with the "New Arrival" tag
         const TopSellingItems = data.filter((item) =>
-          item.tag.includes("Top Selling")
+          item.tags.includes("Top Selling")
         );
 
         setAllItems(TopSellingItems);
@@ -79,7 +80,7 @@ const TopSelling: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col justify-center items-center pt-[50px] md:pt-[72px] px-[16px]">
+    <div id="top_selling" className="flex flex-col justify-center items-center pt-[50px] md:pt-[72px] px-[16px]">
       <h1 className="text-[32px] md:text-[48px] font-bold uppercase">top selling</h1>
       <div className="min-w-[310px] w-full mt-[32px] md:mt-[55px] flex justify-start md:justify-center items-center overflow-hidden">
         <Card items={visibleItems} />

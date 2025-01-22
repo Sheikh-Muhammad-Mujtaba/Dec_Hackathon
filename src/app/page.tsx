@@ -9,13 +9,13 @@ import Reviews from "@/components/Reviews/Reviews";
 export default function Home() {
   return (
     <div>
-      <Header />
-      <Hero />
-      <NewArrival />
-      <TopSelling />
-      <Browse />
-      <Reviews />
-      <Footer />
+        <Header />
+        <Hero />
+        <NewArrival />
+        <TopSelling />
+        <Browse />
+        <Reviews />
+        <Footer />
     </div>
   );
 }

@@ -20,13 +20,15 @@ interface FilterProps {
 }
 
 function Filter({ onFilterChange, isMobile = false }: FilterProps) {
-    const [filters, setFilters] = useState<Filters>({
+    const initialFilters: Filters = {
         category: '',
-        priceRange: [0, 500],
+        priceRange: [0, Infinity],
         colors: [],
         size: [],
-        dressStyle: ''
-    });
+        dressStyle: '',
+      };
+    
+      const [filters, setFilters] = useState<Filters>(initialFilters);
 
     const updateFilters = (newFilters: Partial<Filters>) => {
         const updatedFilters = { ...filters, ...newFilters };
@@ -60,9 +62,16 @@ function Filter({ onFilterChange, isMobile = false }: FilterProps) {
         updateFilters({ size: updatedSizes });
     };
 
-    const applyFilters = () => {
-        onFilterChange(filters);
-    };
+    const resetFilters = () => {
+        const resetState = initialFilters; // Define the reset state
+        setFilters(resetState); // Reset local state
+        applyFilters(resetState); // Apply the reset state
+      };
+      
+      const applyFilters = (currentFilters = filters) => {
+        onFilterChange(currentFilters); // Notify the parent with the current filters
+      };
+      
 
     return (
         <div className={`box-border flex flex-col items-start px-[24px] py-[20px] gap-[24px] w-[295px] min-h-[1220px] border-[1px] border-[rgba(0,0,0,0.1)] rounded-[20px] ${isMobile ? '' : 'hidden md:flex'}`}>
@@ -137,8 +146,11 @@ function Filter({ onFilterChange, isMobile = false }: FilterProps) {
                     ))}
                 </ul>
             </div>
-            <Button className='w-[247px] h-[48px] text-[14px] font-medium rounded-full' onClick={applyFilters}>
+            <Button className='w-[247px] h-[48px] text-[14px] font-medium rounded-full' onClick={() => applyFilters()}>
                 Apply Filter
+            </Button>
+            <Button className='w-[247px] h-[48px] text-[14px] font-medium rounded-full' onClick={resetFilters}>
+                Reset Filter
             </Button>
         </div>
     );

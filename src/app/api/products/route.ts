@@ -1,21 +1,19 @@
-import { productData, Review } from "./data";
+import { fetchProducts, addReviewToProduct } from "./sanityQuery"; // Import the fetch function from sanityQuery.ts
+import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
 
+    // Fetch all products from Sanity
+    const productData = await fetchProducts();
+
+    // Handle "id" parameter
     const id = searchParams.get("id");
     if (id) {
-      if (!/^\d+$/.test(id)) {
-        return new Response(JSON.stringify({ message: "Invalid ID format" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
-
-      const project = productData.find((b) => b.id === parseInt(id, 10));
-      if (project) {
-        return new Response(JSON.stringify(project), {
+      const productById = productData.find((product: { id: string }) => product.id === id);
+      if (productById) {
+        return new Response(JSON.stringify(productById), {
           status: 200,
           headers: {
             "Content-Type": "application/json",
@@ -23,23 +21,53 @@ export async function GET(request: Request) {
           },
         });
       } else {
-        return new Response(JSON.stringify({ message: "Project not found" }), {
+        return new Response(JSON.stringify({ message: "Product not found by ID." }), {
           status: 404,
           headers: { "Content-Type": "application/json" },
         });
       }
     }
 
-    const search = searchParams.get("search");
-    let results = productData;
-    if (search) {
-      const sanitizedSearch = search.trim().toLowerCase().replace(/[<>;'"(){}[\]]/g, "");
-      results = productData.filter((item) =>
-        item.name.toLowerCase().includes(sanitizedSearch)
-      );
+    // Handle "slug" parameter
+    const slug = searchParams.get("slug");
+    console.log(`Received slug: ${slug}`);
+    if (slug) {
+      const productBySlug = productData.find((product: { slug: string }) => product.slug === slug);
+      if (productBySlug) {
+        return new Response(JSON.stringify(productBySlug), {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-store",
+          },
+        });
+      } else {
+        return new Response(JSON.stringify({ message: "Product not found by slug." }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
     }
 
-    return new Response(JSON.stringify(results), {
+    // Handle "search" parameter
+    const search = searchParams.get("search");
+    if (search) {
+      const sanitizedSearch = search.trim().toLowerCase().replace(/[<>;'"(){}[\]]/g, "");
+      const searchResults = productData.filter((product: { name: string }) =>
+        product.name.toLowerCase().includes(sanitizedSearch)
+      );
+      return new Response(JSON.stringify(searchResults), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+          "X-Content-Type-Options": "nosniff",
+        },
+      });
+    }
+
+    // Default: Return all products if no parameters are provided
+    return new Response(JSON.stringify(productData), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -48,7 +76,11 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Error handling request:", error);
+    if (error instanceof Error) {
+      console.error("Error handling request:", error.message, error.stack);
+    } else {
+      console.error("Error handling request:", error);
+    }
     return new Response(JSON.stringify({ message: "Internal Server Error" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
@@ -56,83 +88,48 @@ export async function GET(request: Request) {
   }
 }
 
+
 export async function POST(request: Request) {
   try {
-    const contentType = request.headers.get("Content-Type");
-    if (!contentType || !contentType.includes("application/json")) {
-      return new Response(JSON.stringify({ message: "Invalid Content-Type" }), {
+    const { id, rating, name, review } = await request.json();
+
+    if (!id || !rating || !name || !review) {
+      return new Response(JSON.stringify({ message: "Missing required fields" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    const body = await request.json();
-    const { id, name, review, rating } = body;
+    const newReview = {
+      id: uuidv4(),
+      rating,
+      name,
+      review,
+      date: new Date().toISOString().split('T')[0],
+        };
 
-    // Input Validation
-    if (!/^\d+$/.test(id)) {
-      return new Response(JSON.stringify({ message: "Invalid ID format" }), {
-        status: 400,
+    const updatedProduct = await addReviewToProduct(id, newReview);
+
+    if (updatedProduct) {
+      return new Response(JSON.stringify(updatedProduct), {
+        status: 200,
         headers: { "Content-Type": "application/json" },
       });
-    }
-
-    if (typeof name !== "string" || name.trim().length === 0) {
-      return new Response(JSON.stringify({ message: "Invalid name" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    if (typeof review !== "string" || review.trim().length === 0) {
-      return new Response(JSON.stringify({ message: "Invalid review content" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    if (typeof rating !== "number" || rating < 1 || rating > 5) {
-      return new Response(JSON.stringify({ message: "Invalid rating" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    const projectIndex = productData.findIndex((b) => b.id === parseInt(id, 10));
-    if (projectIndex === -1) {
+    } else {
       return new Response(JSON.stringify({ message: "Product not found" }), {
         status: 404,
         headers: { "Content-Type": "application/json" },
       });
     }
-
-    const project = productData[projectIndex];
-
-    // Add the review
-    const newReviewId = project.Reviews.length > 0
-      ? project.Reviews[project.Reviews.length - 1].id + 1
-      : 1;
-
-    const sanitizedReview: Review = {
-      id: newReviewId,
-      name: name.trim().replace(/[<>;'"(){}[\]]/g, ""),
-      review: review.trim().replace(/[<>;'"(){}[\]]/g, ""),
-      rating: Math.round(rating),
-      date: new Date().toISOString(),
-    };
-
-    project.Reviews.push(sanitizedReview);
-
-    return new Response(JSON.stringify({ message: "Review added successfully" }), {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
   } catch (error) {
-    console.error("Error handling request:", error);
+    if (error instanceof Error) {
+      console.error("Error handling request:", error.message, error.stack);
+    } else {
+      console.error("Error handling request:", error);
+    }
     return new Response(JSON.stringify({ message: "Internal Server Error" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
   }
 }
-
