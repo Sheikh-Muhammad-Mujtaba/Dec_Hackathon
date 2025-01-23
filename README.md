@@ -30,7 +30,7 @@ To achieve a seamless and precise design, the following technologies and librari
 
 ### Prerequisites  
 Ensure you have the following installed:  
-- **Node.js** (v16+ recommended).  
+- **Node.js** .  
 - **npm** or **yarn** (package manager).  
 - **Git** (to clone the repository).  
 
