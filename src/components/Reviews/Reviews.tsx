@@ -1,8 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import Skeleton from "react-loading-skeleton"; // Import Skeleton
-import "react-loading-skeleton/dist/skeleton.css"; // Import Skeleton styles
+import Skeleton from "react-loading-skeleton"; 
+import "react-loading-skeleton/dist/skeleton.css"; 
 
 // Review Interface
 interface Review {

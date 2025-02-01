@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
 import { useCart } from "@/contexts/CardContext";
@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-export default function CheckoutSuccess() {
+const SuccessPage = () => {
   const searchParams = useSearchParams();
   const { clearCart } = useCart();
   const session_id = searchParams.get("session_id");
@@ -67,7 +67,7 @@ export default function CheckoutSuccess() {
   if (orderUpdated) {
     setTimeout(() => {
       setLoading(false);
-    }, 2000 );
+    }, 2000);
   }
 
   if (loading) {
@@ -75,20 +75,22 @@ export default function CheckoutSuccess() {
       <div className="w-full h-screen flex flex-col gap-6 justify-center items-center container mx-auto py-12">
         {/* Spinner */}
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-blue-600"></div>
-  
+
         {/* Loading Text */}
         <h1 className="text-3xl font-bold">Loading...</h1>
         <p>Processing your order</p>
       </div>
     );
   }
-  
+
 
   return (
     <div className="w-full h-screen flex flex-col gap-6 justify-center items-center container mx-auto py-12">
       <h1 className="text-3xl font-bold">Order Confirmed</h1>
       <p>Thank you for your purchase!</p>
-      {orderId && <p>Your Order ID: {orderId}</p>}
+      {orderId !== "Loading..."  && (
+        <p>Your Order ID: {orderId}</p>
+      )}
       {orderUpdated && <p>Successfully Paid</p>}
       <Button>
         <Link href="/dashboard" className="flex items-center gap-2">
@@ -96,5 +98,29 @@ export default function CheckoutSuccess() {
         </Link>
       </Button>
     </div>
+  );
+}
+
+
+const LoadingSpinner = () => {
+
+  return (
+    <div className="w-full h-screen flex flex-col gap-6 justify-center items-center container mx-auto py-12">
+      {/* Spinner */}
+      <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-blue-600"></div>
+
+      {/* Loading Text */}
+      <h1 className="text-3xl font-bold">Loading...</h1>
+      <p>Processing your order</p>
+    </div>
+  );
+}
+
+
+export default function CheckoutSuccess() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <SuccessPage />
+    </Suspense>
   );
 }
