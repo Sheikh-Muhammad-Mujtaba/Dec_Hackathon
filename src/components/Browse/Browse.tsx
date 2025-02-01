@@ -1,13 +1,15 @@
 import React from "react";
 import Image from "next/image";
+import Link from 'next/link';
 
 interface BrowseCardProps {
     title: string;
     imgSrc: string;
+    link: string;
     customWidth?: string;
 }
 
-const BrowseCard: React.FC<BrowseCardProps> = ({ title, imgSrc, customWidth }) => (
+const BrowseCard: React.FC<BrowseCardProps> = ({ title, imgSrc, customWidth, link }) => (
     <div
         className={`relative flex flex-col ${
             customWidth ? `w-[${customWidth}]` : "w-full"
@@ -16,6 +18,7 @@ const BrowseCard: React.FC<BrowseCardProps> = ({ title, imgSrc, customWidth }) =
         <h1 className="absolute left-[24px] md:left-[36px] top-[16px] md:top-[25px] font-bold text-[24px] md:text-[36px] leading-[49px] flex items-center text-[#000000]">
             {title}
         </h1>
+        <Link href={link || '' } className="w-full h-full">
         <Image
             src={imgSrc}
             alt={`${title} image`}
@@ -23,15 +26,16 @@ const BrowseCard: React.FC<BrowseCardProps> = ({ title, imgSrc, customWidth }) =
             height={200}
             className="object-cover grow rounded-3xl w-full h-full"
         />
+        </Link>
     </div>
 );
 
 export default function Browse() {
     const cardData = [
-        { title: "Casual", imgSrc: "/Browse/img1.png", width: "37%" },
-        { title: "Formal", imgSrc: "/Browse/img2.png", width: "63%" },
-        { title: "Party", imgSrc: "/Browse/img3.png", width: "63%" },
-        { title: "Gym", imgSrc: "/Browse/img4.png", width: "37%" },
+        { title: "Casual", imgSrc: "/Browse/img1.png", width: "37%", link: '/category?search=Casual' },
+        { title: "Formal", imgSrc: "/Browse/img2.png", width: "63%", link: '/category?search=Formal' },
+        { title: "Party", imgSrc: "/Browse/img3.png", width: "63%", link: '/category?search=Party' },
+        { title: "Gym", imgSrc: "/Browse/img4.png", width: "37%", link: '/category?search=Gym' },
     ];
 
     return (
@@ -45,11 +49,13 @@ export default function Browse() {
                     <div className="flex gap-4 md:gap-5 max-md:flex-col">
                         <BrowseCard
                             title={cardData[0].title}
+                            link={cardData[0].link}
                             imgSrc={cardData[0].imgSrc}
                             customWidth={cardData[0].width}
                         />
                         <BrowseCard
                             title={cardData[1].title}
+                            link={cardData[1].link}
                             imgSrc={cardData[1].imgSrc}
                             customWidth={cardData[1].width}
                         />
@@ -60,11 +66,13 @@ export default function Browse() {
                     <div className="flex gap-4 md:gap-5 max-md:flex-col">
                         <BrowseCard
                             title={cardData[2].title}
+                            link={cardData[2].link}
                             imgSrc={cardData[2].imgSrc}
                             customWidth={cardData[2].width}
                         />
                         <BrowseCard
                             title={cardData[3].title}
+                            link={cardData[3].link}
                             imgSrc={cardData[3].imgSrc}
                             customWidth={cardData[3].width}
                         />

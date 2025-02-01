@@ -1,7 +1,8 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import Skeleton from "react-loading-skeleton"; // Import Skeleton
+import "react-loading-skeleton/dist/skeleton.css"; // Import Skeleton styles
 
 // Review Interface
 interface Review {
@@ -15,6 +16,7 @@ interface Review {
 export default function Reviews() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [reviewsData, setReviewsData] = useState<Review[]>([]);
+    const [loading, setLoading] = useState(true); // Add loading state
 
     // Fetch reviews data
     useEffect(() => {
@@ -28,9 +30,10 @@ export default function Reviews() {
                 setReviewsData(data);
             } catch (error) {
                 console.error("Error fetching reviews:", error);
+            } finally {
+                setLoading(false); // Set loading to false after fetch
             }
         };
-
         fetchReviews();
     }, []);
 
@@ -65,11 +68,32 @@ export default function Reviews() {
                     />
                 </div>
             </div>
-
             {/* Reviews Section */}
             <div className="relative overflow-hidden w-full">
-                <ReviewCard currentIndex={currentIndex} reviewsData={reviewsData} />
+                {loading ? (
+                    <LoadingSkeleton /> // Display loading skeletons
+                ) : (
+                    <ReviewCard currentIndex={currentIndex} reviewsData={reviewsData} />
+                )}
             </div>
+        </div>
+    );
+}
+
+// Loading Skeleton Component
+function LoadingSkeleton() {
+    return (
+        <div className="flex transition-transform duration-300 ease-in-out">
+            {[...Array(3)].map((_, index) => (
+                <div
+                    key={index}
+                    className="min-w-[33.33%] h-[240px] bg-transparent p-6 rounded-lg border-[1px] border-[rgba(0,0,0,0.1)] mx-[10px]"
+                >
+                    <Skeleton count={3} height={20} width="80%" />
+                    <Skeleton count={1} height={20} width="60%" style={{ marginTop: "10px" }} />
+                    <Skeleton count={3} height={20} width="90%" style={{ marginTop: "10px" }} />
+                </div>
+            ))}
         </div>
     );
 }
@@ -85,7 +109,6 @@ function ReviewCard({
     if (!reviewsData || reviewsData.length === 0) {
         return null;
     }
-
     return (
         <div className="relative w-full flex overflow-hidden">
             <div
@@ -114,14 +137,12 @@ function ReviewItem({ review }: { review: Review }) {
                         <span key={i}>&#9733;</span>
                     ))}
                 </div>
-
                 {/* Reviewer Name and Icon */}
                 <div className="flex items-center gap-[6.25px]">
                     <h3 className="text-[20px] font-bold">{review.name}</h3>
                     <VerifiedIcon />
                 </div>
             </div>
-
             {/* Review Text */}
             <p className="text-gray-600">{review.review}</p>
         </div>

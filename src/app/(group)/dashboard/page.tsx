@@ -3,13 +3,14 @@
 import { useUser } from "@clerk/nextjs";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
+import { loadStripe } from "@stripe/stripe-js";
+
 
 interface Order {
   orderId: string;
@@ -23,9 +24,12 @@ interface Order {
     size: string[];
     quantity: number;
   }[];
-  status: "Pending" | "Processing" | "Delivered" | "Cancelled";
+  status: "Pending" | "Paid" | "Processing" | "Delivered" | "Cancelled";
   createdAt: string;
 }
+
+const pub_key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+const stripe = loadStripe(pub_key!);
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -96,6 +100,62 @@ export default function DashboardPage() {
     fetchOrders();
   }, [user]);
 
+
+  const handleCheckout = async (orderId: string, customerId: string) => {
+    try {
+      const stripeUI = await stripe;
+  
+      // Find the order by orderId
+      const order = orders.find((o) => o.orderId === orderId);
+      if (!order) {
+        throw new Error("Order not found");
+      }
+  
+      // Send order ID to checkout API
+      const sessionResponse = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: order.products.map((item) => ({
+            name: item.name,
+            price: item.price,
+            size: item.size || [],
+            quantity: item.quantity,
+          })),
+          customerId: customerId,
+          orderId: orderId,
+          email: user?.emailAddresses[0]?.emailAddress || "No Email",
+        }),
+      });
+  
+      if (!sessionResponse.ok) {
+        const errorText = await sessionResponse.text();
+        throw new Error(`Failed to create checkout session: ${errorText}`);
+      }
+  
+      const { sessionId } = await sessionResponse.json();
+  
+      if (!stripeUI) {
+        throw new Error("Stripe failed to load");
+      }
+  
+      const { error } = await stripeUI.redirectToCheckout({ sessionId });
+  
+      if (error) {
+        throw error;
+      }
+    } catch (error: any) {
+      console.error("Checkout error:", error);
+      toast({
+        title: "Checkout Failed",
+        description: error.message || "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
+  
+
+  
   if (loading) {
     return (
       <div className="p-8">
@@ -159,7 +219,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {orders.filter((order) => order.status === "Pending").length}
+                {orders.filter((order) => order.status === "Pending" || "Paid" || "Processing").length}
               </div>
             </CardContent>
           </Card>
@@ -211,7 +271,7 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <div className="font-semibold">{order.products?.[0]?.name || "N/A"}</div>
-                        <div className="text-sm text-gray-500">Order #{order.orderId}</div>
+                        <div className="text-sm text-gray-500">Order #{`${order.orderId.slice(0,20)}xxxxxx`}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
@@ -226,6 +286,8 @@ export default function DashboardPage() {
                           {new Date(order.createdAt).toLocaleDateString()}
                         </div>
                       </div>
+
+                      {/* Badge for Order Status */}
                       <Badge
                         variant={
                           order.status === "Delivered"
@@ -237,6 +299,16 @@ export default function DashboardPage() {
                       >
                         {order.status}
                       </Badge>
+
+                      {/* "Pay Now" Button for Pending Orders */}
+                      {order.status === "Pending" && (
+                        <Button
+                          variant="outline"
+                          onClick={() => handleCheckout(order.orderId, order.customerId)}
+                        >
+                          Pay Now
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}

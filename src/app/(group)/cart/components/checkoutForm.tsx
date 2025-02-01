@@ -10,7 +10,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { useCart } from "@/contexts/CardContext";
+import { loadStripe } from "@stripe/stripe-js";
 
+const pub_key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+const stripe = loadStripe(pub_key!);
 
 const formSchema = z.object({
   user_name: z.string().min(2, "Name must be at least 2 characters"),
@@ -30,55 +33,11 @@ type CheckoutFormProps = {
 export default function CheckoutForm({ customerId, onShipmentRateUpdate }: CheckoutFormProps) {
   const [shipmentDetails, setShipmentDetails] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const { cartItems, clearCart } = useCart(); 
+  const { cartItems } = useCart();
+  const [rateLoading, setRateLoading] = useState(false);
+  const orderId = `order-` + Date.now() + `${customerId}` + Math.random().toString(36).substring(7);
 
 
-
-  const handleCheckout = async () => {
-  
-    // Structure the order payload
-    const orderPayload = {
-      orderId: `${Date.now()}+${customerId}`, 
-      customerId,
-      products: cartItems.map((item) => ({
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        image: item.image[0],
-        color: item.color || [],
-        size: item.size || [],
-        quantity: item.quantity,
-      })),
-      status: "Pending", // Default order status
-      createdAt: new Date().toISOString(),
-    };
-  
-    try {
-      // Make a POST request to your API endpoint
-      const response = await fetch("/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(orderPayload),
-      });
-  
-      if (!response.ok) {
-        throw new Error("Failed to place order");
-      }
-  
-      const data = await response.json();
-      console.log("Order placed successfully:", data);
-  
-      // Optionally, 
-       clearCart(); 
-
-      } catch (error) {
-      console.error("Error placing order:", error);
-    }
-  };
-  
-  
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -92,6 +51,8 @@ export default function CheckoutForm({ customerId, onShipmentRateUpdate }: Check
       zipCode: "",
     },
   });
+
+
 
   // Fetch existing customer details on mount
   useEffect(() => {
@@ -119,13 +80,114 @@ export default function CheckoutForm({ customerId, onShipmentRateUpdate }: Check
     }
   }, [customerId, form]);
 
+  async function calculateShipping(values: z.infer<typeof formSchema>) {
+    const rateResponse = await fetch("/api/get-rates", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        address: {
+          name: values.user_name,
+          phone: values.Contact,
+          street: values.address,
+          city: values.city,
+          state: values.state,
+          postalCode: values.zipCode,
+          country: "PK",
+        },
+        packages: [
+          {
+            weight: { value: 1, unit: "pound" },
+            dimensions: { length: 10, width: 6, height: 4, unit: "inch" },
+          },
+        ],
+      }),
+    });
+
+    const rateData = await rateResponse.json();
+
+    if (!rateResponse.ok) {
+      throw new Error(rateData.error || "Failed to fetch shipping rates");
+    }
+    return rateData;
+  };
+
+  // Handler to fetch shipping rates when "Get Rate" is clicked
+  const handleGetRate = async () => {
+    setRateLoading(true);
+    try {
+      const values = form.getValues();
+      const shippingData = await calculateShipping(values);
+      setShipmentDetails(shippingData);
+      onShipmentRateUpdate(shippingData.rate);
+      toast({
+        title: "Shipping Rate Fetched",
+        description: `Rate: $${shippingData.rate}, Estimated Delivery: ${shippingData.estimatedDelivery}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to fetch shipping rates",
+        variant: "destructive",
+      });
+    } finally {
+      setRateLoading(false);
+    }
+  };
+
+
+  const handleCheckout = async () => {
+    try {
+      const stripeUI = await stripe;
+
+      // Send cart items and customer ID to checkout API
+      const sessionResponse = await fetch("/api/checkout", {
+        method: "POST",
+        body: JSON.stringify({
+          items: cartItems.map((item) => ({
+            name: item.name,
+            price: item.price,
+            size: item.size || [],
+            quantity: item.quantity,
+          })),
+          shippingRate: shipmentDetails?.rate,
+          customerId: customerId,
+          orderId: orderId,
+          email: form.getValues("email")
+        }),
+      });
+
+      if (!sessionResponse.ok) {
+        throw new Error("Failed to create checkout session");
+      }
+
+      const { sessionId } = await sessionResponse.json();
+
+      // Redirect to Stripe Checkout
+      if (!stripeUI) {
+        throw new Error("Stripe failed to load");
+      }
+      const { error } = await stripeUI.redirectToCheckout({ sessionId });
+
+      if (error) {
+        throw error;
+      }
+    } catch (error: any) {
+      console.error("Checkout error:", error);
+      toast({
+        title: "Checkout Failed",
+        description: error.message || "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
+
+
+
+
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
 
     try {
-      // Merge address fields into a single address string
-      const fullAddress = `${values.address}, ${values.city}, ${values.state}, ${values.zipCode}`;
-
       // Post user details to Sanity 
       await fetch(`/api/customers?id=${customerId}`, {
         method: "POST",
@@ -134,61 +196,63 @@ export default function CheckoutForm({ customerId, onShipmentRateUpdate }: Check
           id: customerId,
           email: values.email,
           name: values.user_name,
-          address: fullAddress,
+          address: `${values.address}, ${values.city}, ${values.state}, ${values.zipCode}`,
           Contact: values.Contact,
         }),
       });
 
+      await PostOrder();
 
-      // Fetch shipping rates
-      const rateResponse = await fetch("/api/get-rates", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          address: {
-            name: values.user_name,
-            phone: values.Contact,
-            street: values.address,
-            city: values.city,
-            state: values.state,
-            postalCode: values.zipCode,
-            country: "PK", // Default to Pakistan
-          },
-          packages: [
-            {
-              weight: { value: 1, unit: "pound" }, // Example package details
-              dimensions: { length: 10, width: 6, height: 4, unit: "inch" },
-            },
-          ],
-        }),
-      });
-
-      const rateData = await rateResponse.json();
-
-
-      if (!rateResponse.ok) {
-        throw new Error(rateData.error || "Failed to fetch shipping rates");
-      }
-
-      const { rate, estimatedDelivery } = rateData;
-      setShipmentDetails({ rate, estimatedDelivery });
-      onShipmentRateUpdate(rate);
-
-      toast({
-        title: "Rates Fetched",
-        description: `Shipping Rate: $${rate}, Estimated Delivery: ${estimatedDelivery}`,
-      });
+      await handleCheckout();
     } catch (error: any) {
-      console.error("Error during checkout:", error.message);
       toast({
         title: "Error",
-        description: "Failed to complete checkout. Please try again.",
+        description: error.message || "Checkout failed",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
+
+
+  const PostOrder = async () => {
+    const orderPayload = {
+      orderId: orderId,
+      customerId,
+      products: cartItems.map((item) => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        image: item.image,
+        color: item.color || [],
+        size: item.size || [],
+        quantity: item.quantity,
+      })),
+      status: "Pending",
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderPayload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to place order");
+      }
+
+      console.log("✅ Order placed successfully");
+    } catch (error) {
+      console.error("❌ Error placing order:", error);
+      throw error; // Re-throw the error to stop checkout if order fails
+    }
+  };
+
+
+
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -303,7 +367,18 @@ export default function CheckoutForm({ customerId, onShipmentRateUpdate }: Check
                   )}
                 />
               </div>
-              <Button type="submit" className="w-full bg-black hover:bg-gray-800 text-white" disabled={loading} onClick={handleCheckout}>
+              {/* get rate button */}
+              <Button
+                type="button"
+                onClick={handleGetRate}
+                disabled={rateLoading}
+                className="w-full bg-black hover:bg-gray-800 text-white"
+              >
+                {rateLoading ? "Fetching Rates..." : "Get Rate"}
+              </Button>
+
+              {/* checkout button */}
+              <Button type="submit" className="w-full bg-black hover:bg-gray-800 text-white" disabled={loading}>
                 {loading ? "Processing..." : "Complete Checkout"}
               </Button>
             </form>

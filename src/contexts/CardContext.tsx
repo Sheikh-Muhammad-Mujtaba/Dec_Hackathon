@@ -7,8 +7,9 @@ type CartItem = {
   name: string;
   price: number;
   image: string;
-  color: string[]; // Array of colors
-  size: string[];  // Array of sizes
+  discount: number;
+  color: string[];
+  size: string[];
   quantity: number;
 };
 
@@ -30,15 +31,13 @@ export const useCart = () => {
 };
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-
-  // Load cart from localStorage on component mount
-  useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      setCartItems(JSON.parse(savedCart));
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      const savedCart = localStorage.getItem('cart');
+      return savedCart ? JSON.parse(savedCart) : [];
     }
-  }, []);
+    return [];
+  });
 
   // Save cart to localStorage whenever it updates
   useEffect(() => {
@@ -52,7 +51,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const existingItemIndex = prevItems.findIndex((i) => i.id === item.id);
 
       if (existingItemIndex >= 0) {
-        // Item exists, update it
         const updatedItems = [...prevItems];
         const existingItem = updatedItems[existingItemIndex];
 
@@ -81,19 +79,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         return updatedItems;
       } else {
-        // Add new item if it doesn't exist
         return [...prevItems, item];
       }
     });
   };
 
-
   const removeFromCart = (id: string) => {
     setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
   };
 
+  //  Ensure localStorage is cleared when clearing cart
   const clearCart = () => {
     setCartItems([]);
+    localStorage.removeItem("cart");
   };
 
   return (

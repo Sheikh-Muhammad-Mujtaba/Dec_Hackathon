@@ -59,6 +59,7 @@ export default function ProductClient({ product }: { product: any }) {
         const itemToAdd = {
             id: product.id,
             name: product.name,
+            discount: product.discount,
             price: product.price,
             image: product.images[0],
             color: selectedColor,

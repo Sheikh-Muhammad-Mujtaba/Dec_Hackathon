@@ -8,10 +8,11 @@ import { useCart } from "@/contexts/CardContext";
 interface CartItem {
   id: string;
   name: string;
+  discount: number;
   price: number;
   image: string;
-  color: string[]; // Updated to be an array
-  size: string[]; // Updated to be an array
+  color: string[]; 
+  size: string[]; 
   quantity: number;
 }
 
@@ -40,7 +41,7 @@ export default function Cart({ item }: ProductCardProps) {
     <div className="flex items-end justify-between gap-4 p-4 mb-4 relative w-full">
       {/* Product Image */}
       <Image
-        src={item.image || "/placeholder-image.png"}
+        src={item.image}
         alt={item.name || "Product Image"}
         width={124}
         height={124}

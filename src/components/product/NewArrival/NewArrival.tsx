@@ -2,6 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import ProductCard from "../ProductCard";
+import Skeleton from "react-loading-skeleton"; 
+import "react-loading-skeleton/dist/skeleton.css";
+
 
 // Define the Item type for better type safety
 interface Item {
@@ -15,15 +18,23 @@ interface Item {
 }
 
 // Card Component
-const Card: React.FC<{ items: Item[] }> = ({ items }) => {
+export const Card: React.FC<{ items: Item[]; loading: boolean }> = ({ items, loading }) => {
   return (
     <div className="flex gap-[16px] md:gap-[20px] flex-wrap justify-center">
-      {items.map((item) => (
-        <ProductCard key={item.slug} product={item} />
-      ))}
+      {loading ? (
+        // Display Skeletons while loading
+        Array.from({ length: 4 }).map((_, index) => (
+          <div key={index} className="w-[150px] md:w-[200px] h-[300px]">
+            <Skeleton count={3} />
+          </div>
+        ))
+      ) : (
+        items.map((item) => <ProductCard key={item.slug} product={item} />)
+      )}
     </div>
   );
 };
+
 
 // NewArrival Component
 const NewArrival: React.FC = () => {
@@ -68,7 +79,11 @@ const NewArrival: React.FC = () => {
   };
 
   if (loading) {
-    return <p className="w-full text-center" >Loading products...</p>;
+    return (
+      <div className="flex flex-col items-center justify-center py-8">
+        <Card items={[]} loading={true} /> 
+      </div>
+    );
   }
 
   if (error) {
@@ -84,7 +99,7 @@ const NewArrival: React.FC = () => {
       className="flex flex-col justify-center items-center pt-[50px] md:pt-[72px] px-[16px]">
       <h1 className="text-[32px] md:text-[48px] font-bold">NEW ARRIVALS</h1>
       <div className="min-w-[310px] w-full mt-[32px] md:mt-[55px] flex justify-start md:justify-center items-center overflow-hidden">
-        <Card items={visibleItems} />
+        <Card items={visibleItems} loading={false} />
       </div>
       <Button
         onClick={handleViewAll}

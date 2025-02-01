@@ -37,11 +37,11 @@ function Page() {
     }
   }, [user]);
 
-  const DISCOUNT_RATE = 0.2;
+  const DISCOUNT_RATE = cartItems.reduce((total, item) => total + item.discount, 0);
 
   const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
-  const discount = DISCOUNT_RATE * subtotal;
-  const total = subtotal - discount + (deliveryFee || 0);
+  const discount = DISCOUNT_RATE;
+  const total = subtotal + (deliveryFee || 0);
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
@@ -130,8 +130,8 @@ function Page() {
               <p>{formatCurrency(subtotal)}</p>
             </div>
             <div className="flex justify-between">
-              <p>Discount (-20%)</p>
-              <p className="text-[#FF3333]">-{formatCurrency(discount)}</p>
+              <p>Discount</p>
+              <p className="text-[#FF3333]">-{(discount)}%</p>
             </div>
             <div className="flex justify-between">
               <p>Delivery Fee</p>
